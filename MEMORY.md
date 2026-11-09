@@ -19,3 +19,4 @@
 - Final proof bundle: `screenshots/result/1/video.mp4` (30 s) + 900 frames, encoded with imageio-ffmpeg `-start_number 0 -i frame%08d.png`.
 - Tests: use movie mode (`--write-movie`, `--fixed-fps 30`) for frame-accurate waits; headless runs too fast for timed fades.
 - Synthetic `InputEventKey` used to call `_unhandled_input` must set BOTH `keycode` and `physical_keycode`; the `map` action is bound to physical Tab, so keycode-only events fail to match (pause/Escape worked because it uses keycode).
+- **Pit softlock fix:** rooms can define `pits: [{rect, respawn}]`; Room builds an Area2D that deals 1 mask and teleports the player to the respawn ledge. Used in r4's 340px dash gap (respawn 900,1300). Test: `test/test_pit.gd` (masks 4→3, position returns to ledge).
