@@ -1,0 +1,21 @@
+# Memory
+
+- Engine: Steam Godot **4.7.2 stable** at `D:\SteamLibrary\steamapps\common\Godot Engine\godot.windows.opt.tools.64.exe`. Standard build (no Mono/C#). No .NET SDK installed. Use GDScript.
+- Capture works with this exe via PowerShell `Start-Process` + redirects; stdout captured to file. `--write-movie` renders with NVIDIA GTX 1060 (OpenGL Compatibility). Verified 8 frames at 10 fps.
+- ffmpeg: no system ffmpeg. Installed `imageio-ffmpeg`; binary at `%LOCALAPPDATA%\Python\pythoncore-3.14-64\Lib\site-packages\imageio_ffmpeg\binaries\ffmpeg-win-x86_64-v9.0.2.exe` (has libx264).
+- No image-generation keys (GEMINI/GOOGLE/XAI/TRIPO absent). All art procedural; reference.png drawn with PIL.
+- Imported design skills from Anthropic plugin directory: `design` (UX/UI) and `spritecook` (game art/Godot sprites). SpriteCook needs OAuth/credits, not usable for generation here.
+- Project deliberately lives at `D:\Users\SparkGame\Desktop\HollowEcho` (sibling of the existing C# project) to avoid overwriting 枪火地牢.
+- Chinese UI: use `SystemFont` with font_names ["Microsoft YaHei UI","Microsoft YaHei","Noto Sans CJK SC"], assign to HUD theme.
+- Runtime-built scenes: no .tscn per entity; `main.tscn` only holds GameRoot. Avoids SetScript wrapper issues.
+- Movie capture input: use `Input.action_press/release` from test SceneTree scripts; fixed fps 30.
+- PowerShell Start-Process for Godot; quote the exe path. `--headless` works for validation but renders nothing; omit headless for capture.
+- **SceneTree `--script` compile order:** the main-loop script compiles before autoload singletons and before global classes are available to it. Do NOT reference `Game` directly or reference a global class whose script uses `Game` (e.g. `Boss`) from a test script — use `root.get_node_or_null("Game")` and `node.get_script() == load("res://scripts/boss.gd")` instead. Otherwise: "Identifier not found: Game" / "Failed to compile depended scripts".
+- **Movie maker frame count:** the recorded movie length equals script frames only if the script runs at the same cadence; keep `--quit-after` >= script quit frame and verify `"N frames at 30 FPS"` in stdout. A partial run leaves stale PNGs from earlier attempts in the output folder — always delete the result folder first.
+- **ffmpeg encoding:** the pip `imageio-ffmpeg` Windows build has no glob support. Encode with `-start_number 0 -i frame%08d.png`, not `-pattern_type glob`.
+- **One-way ledges:** CollisionShape2D `one_way_collision = true` on ledges prevents the player's head colliding with platform undersides (an issue that silently stops horizontal movement).
+- **Pickup persistence:** rooms are rebuilt on every load; store taken pickups in `Game.taken_pickups` (key `room:x:y`) and skip already-collected relics/mask shards, otherwise relic labels/pickups respawn after room reload.
+- **Dash tuning:** dash 1050 px/s × 0.2 s with 450 px/s exit speed crosses the 340 px r4 gap; earlier 920×0.16 fell just short and the player got stuck against the right platform side.
+- Final proof bundle: `screenshots/result/1/video.mp4` (30 s) + 900 frames, encoded with imageio-ffmpeg `-start_number 0 -i frame%08d.png`.
+- Tests: use movie mode (`--write-movie`, `--fixed-fps 30`) for frame-accurate waits; headless runs too fast for timed fades.
+- Synthetic `InputEventKey` used to call `_unhandled_input` must set BOTH `keycode` and `physical_keycode`; the `map` action is bound to physical Tab, so keycode-only events fail to match (pause/Escape worked because it uses keycode).
