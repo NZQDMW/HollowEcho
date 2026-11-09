@@ -13,6 +13,7 @@ var ledges: Array = []
 var doors: Array = []
 var lanterns: Array = []
 var hazards: Array = []
+var pits: Array = []
 
 
 func setup(room_data: Dictionary) -> void:
@@ -25,11 +26,13 @@ func setup(room_data: Dictionary) -> void:
 	doors = data.get("doors", [])
 	lanterns = data.get("lanterns", [])
 	hazards = data.get("hazards", [])
+	pits = data.get("pits", [])
 	var size: Vector2 = data.get("size", Vector2(1280, 720))
 	bounds = Rect2(Vector2.ZERO, size)
 	_build_collision()
 	_build_doors()
 	_build_hazards()
+	_build_pits()
 	_build_gates()
 	_build_bench_and_signs()
 	_build_pickups()
@@ -109,6 +112,41 @@ func _build_hazards() -> void:
 				body.take_damage(1, rect.get_center())
 		)
 		add_child(area)
+
+
+func _build_pits() -> void:
+	for p in pits:
+		var rect: Rect2 = p["rect"]
+		var respawn: Vector2 = p["respawn"]
+		var area := Area2D.new()
+		area.collision_layer = 0
+		area.collision_mask = Utils.L_PLAYER
+		area.position = rect.get_center()
+		var cs := CollisionShape2D.new()
+		var shape := RectangleShape2D.new()
+		shape.size = rect.size
+		cs.shape = shape
+		area.add_child(cs)
+		add_child(area)
+		area.body_entered.connect(func(body: Node) -> void:
+			var pl := body as Player
+			if pl == null or pl.dead:
+				return
+			if pl.invuln <= 0.0:
+				pl.take_damage(1, rect.get_center())
+			if pl.dead:
+				return
+			pl.global_position = respawn
+			pl.velocity = Vector2.ZERO
+			pl.invuln = maxf(pl.invuln, 0.9)
+			var world := get_tree().get_first_node_in_group("world")
+			if world != null:
+				world.call("spawn_death_burst", rect.get_center(), Color(0.55, 0.45, 0.9))
+				var cam = world.get("camera")
+				if cam != null:
+					cam.add_shake(9.0)
+			Game.toast.emit("深渊将你送回了岸边。")
+		)
 
 
 func _load_script(path: String) -> GDScript:
@@ -243,6 +281,9 @@ func _draw() -> void:
 	for h in hazards:
 		_draw_hazard(h)
 
+	for p in pits:
+		_draw_pit(p["rect"])
+
 	for d in doors:
 		_draw_door(d, accent)
 
@@ -272,6 +313,21 @@ func _draw_ground_details(rect: Rect2, seed_value: int, accent: Color) -> void:
 		var y := rect.position.y - 2.0
 		draw_line(Vector2(x, y), Vector2(x, y - 12), Color(0.5, 0.7, 0.7, 0.5), 2.0)
 		draw_circle(Vector2(x, y - 13), 3.5 + rng.randf() * 1.5, Color(accent.r, accent.g, accent.b, 0.75))
+
+
+func _draw_pit(rect: Rect2) -> void:
+	var top := rect.position.y - 150.0
+	draw_rect(Rect2(rect.position.x, top, rect.size.x, rect.size.y + 150.0), Color(0.004, 0.005, 0.01, 0.58))
+	for i in range(3):
+		var y := top + 46.0 + i * 38.0
+		draw_line(Vector2(rect.position.x + 10, y), Vector2(rect.end.x - 10, y), Color(0.36, 0.3, 0.56, 0.09), 2.0)
+	var x := rect.position.x + 4.0
+	while x < rect.end.x - 4.0:
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(x, rect.position.y), Vector2(x + 12, rect.position.y - 30.0), Vector2(x + 24, rect.position.y)
+		]), Color(0.22, 0.1, 0.16))
+		draw_line(Vector2(x + 12, rect.position.y - 30.0), Vector2(x + 24, rect.position.y), Color(0.85, 0.4, 0.35, 0.55), 1.5)
+		x += 24.0
 
 
 func _draw_wall(rect: Rect2, seed_value: int) -> void:

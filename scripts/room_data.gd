@@ -201,8 +201,12 @@ static func _r4() -> Dictionary:
 		"lanterns": [Vector2(200, 1300), Vector2(1200, 1300)],
 		"signs": [
 			{"pos": Vector2(220, 1300), "text": "回响深井。\n落在井底的声音，从未真正消失。"},
+			{"pos": Vector2(860, 1300), "text": "裂隙之下是无底的黑暗。\n若坠入深渊，它会将你送回岸边，但会夺走一格生命。"},
 		],
 		"hazards": [],
+		"pits": [
+			{"rect": Rect2(960, 1440, 290, 60), "respawn": Vector2(900, 1300)},
+		],
 		"boss": {},
 		"arena": Rect2(),
 	}
