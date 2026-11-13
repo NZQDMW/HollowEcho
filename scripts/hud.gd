@@ -349,7 +349,8 @@ func _draw_dialogue(w: float, h: float) -> void:
 			draw_string(font, Vector2(panel.end.x - 44.0 - psz.x, row_y), price_text,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 19, price_col)
 		draw_string(font, Vector2(panel.position.x + 44, panel.end.y - 28),
-			"W/S 选择    E 购买    Esc 离开", HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_TEXT_DIM, 0.85))
+			"摇杆 选择    互 购买    停 离开" if Game.touch_mode else "W/S 选择    E 购买    Esc 离开",
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_TEXT_DIM, 0.85))
 		if not dialogue_feedback.is_empty():
 			draw_string(font, Vector2(panel.position.x + 44, panel.end.y - 62), dialogue_feedback,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(Utils.C_WARM, 0.95))
@@ -359,7 +360,7 @@ func _draw_dialogue(w: float, h: float) -> void:
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_GEO, 0.8))
 	else:
 		var blink := 0.55 + 0.45 * sin(time * 3.0)
-		draw_string(font, Vector2(panel.end.x - 160, panel.end.y - 28), "E  继续",
+		draw_string(font, Vector2(panel.end.x - 160, panel.end.y - 28), "%s  继续" % Game.interact_label(),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color(Utils.C_SOUL, blink))
 
 
@@ -379,21 +380,32 @@ func _draw_title(w: float, h: float) -> void:
 		"L  法术          长按 F  聚集灵魂治愈伤口",
 		"E  互动          Tab  地图          Esc  暂停",
 	]
+	if Game.touch_mode:
+		rows = [
+			"左侧摇杆  移动 · 上推 / 下推改变挥钉方向",
+			"右侧  跳 / 打 / 冲 / 法 / 聚 / 互",
+			"右上  图（地图）   停（暂停）",
+			"建议横屏游玩，双手持机",
+		]
 	var y := h * 0.60
 	for row in rows:
 		_ctext(row, y, 20, Color(Utils.C_TEXT, 0.82))
 		y += 34.0
 
 	var blink := 0.55 + 0.45 * sin(time * 3.0)
-	_ctext("按任意键开始", h * 0.88, 26, Color(Utils.C_SOUL, blink))
+	_ctext("点击屏幕开始" if Game.touch_mode else "按任意键开始", h * 0.88, 26, Color(Utils.C_SOUL, blink))
 	_ctext("所有画面均由代码实时绘制", h * 0.94, 15, Color(Utils.C_TEXT_DIM, 0.6))
 
 
 func _draw_pause(w: float, h: float) -> void:
 	draw_rect(Rect2(0, 0, w, h), Color(0.008, 0.012, 0.022, 0.72))
 	_ctext("已暂停", h * 0.40, 56, Utils.C_IVORY)
-	_ctext("Esc  继续游戏", h * 0.50, 22, Utils.C_TEXT)
-	_ctext("A/D 移动 · 空格 跳跃 · J 挥钉 · K 冲刺 · L 法术 · F 聚集", h * 0.56, 18, Utils.C_TEXT_DIM)
+	if Game.touch_mode:
+		_ctext("停  继续游戏", h * 0.50, 22, Utils.C_TEXT)
+		_ctext("左侧摇杆移动 · 跳 / 打 / 冲 / 法 / 聚 / 互", h * 0.56, 18, Utils.C_TEXT_DIM)
+	else:
+		_ctext("Esc  继续游戏", h * 0.50, 22, Utils.C_TEXT)
+		_ctext("A/D 移动 · 空格 跳跃 · J 挥钉 · K 冲刺 · L 法术 · F 聚集", h * 0.56, 18, Utils.C_TEXT_DIM)
 
 
 func _room_color(id: StringName) -> Color:
@@ -451,7 +463,7 @@ func _draw_map(w: float, h: float) -> void:
 	var count_text := "已探索 %d / %d" % [explored, map_rooms.size()]
 	var csz := font.get_string_size(count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
 	draw_string(font, Vector2(panel.end.x - 40.0 - csz.x, ly), count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Utils.C_TEXT_DIM, 0.9))
-	_ctext("Tab  关闭地图", h - 58, 20, Utils.C_TEXT_DIM)
+	_ctext("图  关闭地图" if Game.touch_mode else "Tab  关闭地图", h - 58, 20, Utils.C_TEXT_DIM)
 
 
 func _draw_ending(w: float, h: float) -> void:

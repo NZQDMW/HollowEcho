@@ -3,11 +3,13 @@ extends Node2D
 enum State { TITLE, PLAYING, DEAD, ENDING }
 
 const HudScript := preload("res://scripts/hud.gd")
+const TouchScript := preload("res://scripts/touch_controls.gd")
 
 var state := State.TITLE
 var world: GameWorld
 var camera: CameraRig
 var hud: Control
+var touch: Control
 var fade_layer: CanvasLayer
 var fade_rect: ColorRect
 var transitioning := false
@@ -26,6 +28,7 @@ var dialogue_feedback := ""
 
 
 func _ready() -> void:
+	add_to_group("game_root")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	Game.reset_run()
 	_build()
@@ -50,6 +53,14 @@ func _build() -> void:
 	hud = HudScript.new()
 	hud.name = "Hud"
 	hud_layer.add_child(hud)
+
+	var touch_layer := CanvasLayer.new()
+	touch_layer.name = "TouchLayer"
+	touch_layer.layer = 12
+	add_child(touch_layer)
+	touch = TouchScript.new()
+	touch.name = "Touch"
+	touch_layer.add_child(touch)
 
 	fade_layer = CanvasLayer.new()
 	fade_layer.name = "FadeLayer"
@@ -136,6 +147,15 @@ func start_game() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if not event.pressed:
+			return
+		if state == State.TITLE:
+			start_game()
+			get_viewport().set_input_as_handled()
+		elif state == State.ENDING:
+			_restart()
+		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 	if dialogue_open:
@@ -154,6 +174,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		_toggle_pause()
 	elif event.is_action_pressed("map"):
 		_toggle_map()
+
+
+func touch_toggle_pause() -> void:
+	if state != State.PLAYING or dialogue_open or map_open:
+		return
+	_toggle_pause()
+
+
+func touch_toggle_map() -> void:
+	if state != State.PLAYING or dialogue_open:
+		return
+	if paused and not map_open:
+		return
+	_toggle_map()
 
 
 func _process(delta: float) -> void:

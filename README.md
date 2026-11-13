@@ -12,6 +12,20 @@ godot --path .
 
 游戏主场景为 `res://scenes/main.tscn`。
 
+## 在线游玩（手机 / 浏览器）
+
+网页版已导出到 `docs/` 并发布到 GitHub Pages：
+
+**https://nzqdmw.github.io/HollowEcho/**
+
+手机建议横屏打开；进入后点击屏幕开始。桌面浏览器可用键盘，触屏设备会自动显示虚拟摇杆与动作键。
+
+重新导出：
+
+```bash
+godot --headless --path . --export-release "Web" docs/index.html
+```
+
 ## 操作
 
 | 按键 | 功能 |
@@ -27,7 +41,17 @@ godot --path .
 | Esc | 暂停 / 关闭对话 |
 | R | 结局后重新开始 |
 
-商店内：W / S 选择商品，E 购买，Esc 离开。
+触屏（手机/平板自动显示）：
+
+| 屏幕控制 | 功能 |
+|----------|------|
+| 左下摇杆 | 移动；上推/下推改变挥钉方向，也可在商店中上下选择 |
+| 跳 / 打 / 冲 / 法 | 跳跃（长按更高）/ 挥钉 / 冲刺 / 法术 |
+| 聚 | 长按聚集灵魂治疗 |
+| 互 | 互动（长椅、路牌、NPC） |
+| 图 / 停（右上） | 地图 / 暂停 |
+
+商店内：W / S 选择商品，E 购买，Esc 离开（触屏用摇杆选择、互购买、停离开）。
 
 ## 已实现内容
 
@@ -44,6 +68,8 @@ godot --path .
 - **隐藏支线**：王座前厅高处的裂隙（需要二段跳）→ 王座密道 → 苦痛之路（两段高强度平台挑战）→ 王座之心。苦痛之路内没有长椅，坠入深坑会扣 1 格生命并送回该段的起点；终点奖励「苦痛之心」，结局追加专属台词。
 - **敌人与 Boss**：爬虫、飞蛾、镰刀守卫、吐酸者（远程酸液）、跃虫（扑跳）；主 Boss「残破守卫」拥有跳跃砸地冲击波、冲锋、50% 血量二阶段，击败后进入结局。
 - **UI**：面具血量、灵魂球、吉欧计数、护符槽、房间名横幅、提示/拾取 toast、Boss 血条、对话/商店面板、地图（14 房间 + 图例 + 探索计数）、暂停、标题与结局画面（中文 SystemFont）。
+- **手机端**：触屏自动显示虚拟摇杆（左下）与动作键（右下：跳/打/冲/法/聚/互），右上为地图/暂停；标题与暂停界面切换为触摸提示，竖屏时显示横屏引导。桌面端保持纯键盘操作。
+- **网页版**：Godot Web 导出（GL Compatibility、无线程），可直接在手机浏览器打开；`docs/` 为 GitHub Pages 发布目录。
 
 ## 测试与演示
 
@@ -51,7 +77,7 @@ godot --path .
 - 内容分镜：`screenshots/result/content/shot_*.png`（静默集市、商店、记录者、钟鸣洞窟、面具碎片、钟鸣守卫、地图、回响之心奖励）。
 - 系统回归：`test/test_systems.gd`（遗物拾取、长椅、死亡/阴影回收、Boss/结局断言）。
 - 内容回归：`test/test_content.gd`（NPC/商店购买与售罄、钥匙开门、新房间、面具碎片、可选 Boss 奖励与不再刷新）。
-- 新增内容回归：`test/test_extra.gd`（14 房间与门的双向连通、王座密道/苦痛之路/王座之心、特殊道具效果与死亡保留、护符购买、地图 14 格）；`test/test_pain.gd`（移动石台水平/垂直带人）。
+- 新增内容回归：`test/test_extra.gd`（14 房间与门的双向连通、王座密道/苦痛之路/王座之心、特殊道具效果与死亡保留、护符购买、地图 14 格）；`test/test_pain.gd`（移动石台水平/垂直带人）；`test/test_touch.gd`（虚拟摇杆、动作键自动松开、地图/暂停键）。
 - 演示脚本：`test/presentation.gd`（SceneTree 驱动，基础流程）；`test/presentation_content.tscn` + `test/presentation_content_node.gd`（内容分镜 / 长镜头）。
 - 分镜捕获（每个场景独立短录制，结果稳定）：
 
@@ -60,7 +86,7 @@ godot --path . --write-movie screenshots/moments/shop/frame.png \
   --fixed-fps 30 --quit-after 200 res://test/capture_moment.tscn -- --moment=shop
 ```
 
-`--moment` 可选：market / shop / lore / cavern / mask / boss / map / map_all / reward / passage / feather / pain / pain_mid / pain_deep / heart / charms。
+`--moment` 可选：market / shop / lore / cavern / mask / boss / map / map_all / reward / passage / feather / pain / pain_mid / pain_deep / heart / charms / mobile。
 
 > 本机 Godot 4.7.2 下用 `--script` 配合 `--write-movie` 会输出透明帧，长镜头演示请改用 `.tscn` 驱动场景（`test/presentation_content.tscn`），并用 `--quit-after` 结束录制，不要从驱动脚本里调用 `get_tree().quit()`。
 

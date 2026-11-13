@@ -44,6 +44,7 @@ var deaths := 0
 var play_seconds := 0.0
 var running := false
 var dialogue_cooldown := 0.0
+var touch_mode := false
 
 
 func _process(delta: float) -> void:
@@ -139,6 +140,10 @@ func has_relic(relic_id: StringName) -> bool:
 
 func has_item(item_id: StringName) -> bool:
 	return bool(special_items.get(item_id, false))
+
+
+func interact_label() -> String:
+	return "互" if touch_mode else "E"
 
 
 func gain_item(item_id: StringName, title: String) -> void:

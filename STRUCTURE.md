@@ -27,7 +27,7 @@ Engine: Godot 4.7.2 (GL Compatibility), GDScript. No C# / .NET (Steam build is s
 ### Main
 - **File:** res://scenes/main.tscn
 - **Root type:** Node2D (script `game_root.gd`)
-- **Runtime children:** World (draws room, entities), Camera2D, HUD (CanvasLayer, layer 10), Fade (CanvasLayer, layer 20), Pause/Map (HUD child)
+- **Runtime children:** World (draws room, entities), Camera2D, HUD (CanvasLayer, layer 10), Touch controls (CanvasLayer, layer 12, touch devices only), Fade (CanvasLayer, layer 20), Pause/Map (HUD child)
 
 Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn files.
 
@@ -58,7 +58,8 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 | scripts/gate.gd | Relic/key-gated barrier |
 | scripts/sign.gd | Readable tutorial message |
 | scripts/projectile.gd | Vengeful-spirit bolt and boss shockwave |
-| scripts/hud.gd | Masks/soul/geo, banners, toasts, boss bar, title/end/death overlays, map, pause |
+| scripts/hud.gd | Masks/soul/geo, banners, toasts, boss bar, title/end/death overlays, map, pause, touch hints |
+| scripts/touch_controls.gd | Virtual joystick + action buttons on touch devices; maps touches to Input actions and pause/map calls |
 | scripts/backdrop.gd | Parallax cave silhouettes, light shafts, glow dust |
 | scripts/effects.gd | Hit sparks, slash FX, screen shake, hitstop |
 | scripts/utils.gd | Palette, glow texture, jagged shapes, fonts, drawing helpers |
@@ -70,6 +71,7 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 | test/test_content.gd | Shop, key gate, new rooms, mask shard, optional boss assertions |
 | test/test_extra.gd | 14-room door reciprocity, 王座密道/苦痛之路/王座之心, special items, map coverage |
 | test/test_pain.gd | Moving-platform carry (horizontal / vertical) |
+| test/test_touch.gd | Virtual joystick, touch action buttons, pause/map buttons |
 | test/test_focus.gd | Focus heal / spell assertions |
 | test/test_ui.gd | Map / pause assertions |
 
@@ -87,6 +89,7 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 - NPC interaction pauses the tree; `GameRoot` polls W/S/E/Esc while the HUD draws the dialogue/shop panel. Purchases go through `Game.purchase(item)` and are recorded in `Game.shop_purchases`.
 - Optional bosses write their id to `Game.bosses_defeated`; `Room._build_boss` skips an already-defeated boss when the room reloads. The final boss alone calls `Game.trigger_ending()`.
 - All visuals are drawn with `_draw`/Polygon2D/gradient textures; CJK text uses SystemFont.
+- Touch controls appear when `DisplayServer.is_touchscreen_available()` or the OS is mobile; they simulate Input actions (joystick uses analog strengths) and call `GameRoot.touch_toggle_pause/map`. `Game.touch_mode` switches HUD hints. `pointing/emulate_touch_from_mouse` is enabled so a mouse click counts as a touch (click-to-start in browsers).
 
 ## Signals
 
@@ -104,8 +107,10 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 
 - Import: `godot --headless --path . --import`
 - Validate: `godot --headless --path . --quit`
-- Tests: `godot --headless --path . --fixed-fps 30 --script res://test/test_extra.gd`（同样适用于 test_systems / test_content / test_focus / test_ui / test_pit / test_pain）
+- Tests: `godot --headless --path . --fixed-fps 30 --script res://test/test_extra.gd`（同样适用于 test_systems / test_content / test_focus / test_ui / test_pit / test_pain / test_touch）
 - Run: `godot --path .`
+- Web export: `godot --headless --path . --export-release "Web" docs/index.html`（Web preset in `export_presets.cfg`；release templates installed under the Steam editor's `editor_data/export_templates/4.7.2.stable/`）
+- Web preview: serve `docs/` over HTTPS or localhost; GitHub Pages hosts it at `https://nzqdmw.github.io/HollowEcho/`
 - Capture (scene-driven): `godot --path . --write-movie screenshots/x/frame.png --fixed-fps 30 --quit-after N res://test/presentation_content.tscn`
 - Moment shots: `godot --path . --write-movie screenshots/moments/<name>/frame.png --fixed-fps 30 --quit-after 200 res://test/capture_moment.tscn -- --moment=<name>`
 

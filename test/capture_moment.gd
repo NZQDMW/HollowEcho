@@ -89,6 +89,16 @@ func _setup() -> void:
 				gm.gain_item(&"feather", "轻羽斗篷")
 				gm.gain_item(&"lantern", "守梦者之灯")
 				gm.gain_item(&"pain_heart", "苦痛之心")
+		"mobile":
+			game.debug_goto(&"r8", Vector2(600, 760))
+			if gm != null:
+				gm.touch_mode = true
+			if game.touch != null:
+				game.touch.visible = true
+				game.touch.set_process(true)
+				game.touch.set_process_input(true)
+				game.touch.size = Vector2(1280, 720)
+				game.touch._layout()
 
 
 func _process(_delta: float) -> void:

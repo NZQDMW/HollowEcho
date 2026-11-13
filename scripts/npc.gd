@@ -47,7 +47,10 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if body is Player:
 		in_range = true
-		Game.prompt_changed.emit(prompt)
+		var shown := prompt
+		if Game.touch_mode and shown.begins_with("E  "):
+			shown = "%s  %s" % [Game.interact_label(), shown.substr(3)]
+		Game.prompt_changed.emit(shown)
 
 
 func _on_body_exited(body: Node) -> void:

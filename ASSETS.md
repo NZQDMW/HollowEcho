@@ -27,6 +27,7 @@ No image-generation API/key is available on this machine (Gemini/xAI/Tripo keys 
 | crate / pillar | procedural props | ~80 px / ~210 px | stacked boxes; broken fluted column |
 | shade | vector ghost | ~110 px tall | black echo of the knight, white eyes, holds lost geo |
 | moving platform | procedural slab | 140–160×24 px | pale stone slab, ivory rim light, pulsing runes; rides a sine path |
+| touch HUD | Control drawing | 1280×720 reference | translucent joystick base/knob, 6 action buttons + map/pause, Chinese labels, portrait rotate overlay |
 | crumble platform | procedural slab | 140×22 px | same slab; shakes, red fracture lines, collapses, faint re-form outline |
 | sawblade | procedural hazard | r≈24–28 px | dark toothed wheel, warm bronze core, motion shimmer, orange glow |
 | special items | procedural icons | 48–64 px | 轻羽斗篷 (feather strokes), 守梦者之灯 (warm lantern), 苦痛之心 (red crystal heart), each with an ivory ring + label |

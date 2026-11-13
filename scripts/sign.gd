@@ -34,7 +34,7 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if body is Player:
 		in_range = true
-		Game.prompt_changed.emit("E  阅读")
+		Game.prompt_changed.emit("%s  阅读" % Game.interact_label())
 
 
 func _on_body_exited(body: Node) -> void:
