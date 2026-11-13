@@ -71,6 +71,8 @@ func _setup() -> void:
 			game.debug_goto(&"r10", Vector2(700, 620))
 		"passage":
 			game.debug_goto(&"r11", Vector2(1640, 1100))
+		"secret":
+			game.debug_goto(&"r6", Vector2(1420, 600))
 		"feather":
 			game.debug_goto(&"r11", Vector2(180, 640))
 		"pain":
