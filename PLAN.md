@@ -28,6 +28,19 @@ A playable 2D side-scrolling Metroidvania in Godot 4.7 (GDScript) following Holl
   - reference.png consistency: dark indigo palette, cyan rim light, ivory mask knight, layered caves, HUD top-left masks + soul, top-right geo.
   - **Presentation proof bundle:** `screenshots/result/1/video.mp4` (30 fps, ≥15 s) + raw `frameXXX.png` sequence showing movement, combat, relic pickup, gate crossing, boss.
 
+## Content Update (2026-11-13)
+
+- Added 3 rooms: r8 静默集市 (safe hub, bench, merchant, lorekeeper, stalls), r9 钟鸣洞窟 (acid spitters, hopper, mask shard, pit), r10 回响之厅 (optional boss 钟鸣守卫, 48 HP, 2 phases).
+- Added a geo economy: merchant sells 面具碎片 ×2 (40), 灵魂容器 (70), 骨钉磨石 (90), 锈蚀钥匙 (40). Purchases persist for the run in `Game.shop_purchases`.
+- Added key-gated optional branch: r3 → r8 → (锈蚀钥匙) → r9 → r10.
+- Added NPC dialogue/shop UI (pauses the tree; GameRoot polls W/S/E/Esc; HUD draws the panel with purchase feedback).
+- Added two enemy types: 吐酸者 (aimed acid projectile) and 跃虫 (leaping chase), plus a new acid projectile kind.
+- Parameterized the boss (id/name/hp/final/phase2 text); optional boss is skipped after defeat and rewards 回响之心 (mask +1, nail +1, soul cap +33). Ending line changes if the bell boss was defeated.
+- Map screen now shows 10 rooms with legend and explored counter.
+- Tests: `test/test_content.gd` covers shop purchase/limit, key gate unlock, new rooms/enemies, mask shard, optional boss reward and non-respawn. All existing tests still pass.
+- Screenshot proof: `screenshots/result/content/shot_*.png` (8 moments) via `test/capture_moment.tscn`.
+- Note: `--write-movie` + `--script` produces transparent frames on this Godot build; scene-driven capture is the working path.
+
 ## Notes
 
 - No audio (pipeline does not ship audio).

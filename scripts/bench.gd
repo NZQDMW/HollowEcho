@@ -30,7 +30,7 @@ func _process(delta: float) -> void:
 	if resting > 0.0:
 		resting = maxf(0.0, resting - delta)
 	queue_redraw()
-	if in_range and Input.is_action_just_pressed("interact"):
+	if in_range and Game.dialogue_cooldown <= 0.0 and Input.is_action_just_pressed("interact"):
 		Game.save_bench(room_id, position)
 		resting = 1.2
 		var world := get_tree().get_first_node_in_group("world")

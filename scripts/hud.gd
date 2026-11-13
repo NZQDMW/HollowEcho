@@ -13,23 +13,34 @@ var banner_timer := 0.0
 var toasts: Array[Dictionary] = []
 var prompt_text := ""
 
+var dialogue_visible := false
+var dialogue_name := ""
+var dialogue_text := ""
+var dialogue_shop: Array = []
+var dialogue_index := 0
+var dialogue_mode := ""
+var dialogue_feedback := ""
+
 var boss_active := false
 var boss_title := ""
 var boss_hp := 0
 var boss_max := 1
 
 var map_rooms := {
-	&"r1": Rect2(40, 250, 150, 70),
-	&"r2": Rect2(290, 250, 150, 70),
-	&"r3": Rect2(540, 250, 150, 70),
-	&"r4": Rect2(290, 380, 150, 70),
-	&"r5": Rect2(40, 380, 150, 70),
-	&"r6": Rect2(540, 380, 150, 70),
-	&"r7": Rect2(790, 380, 150, 70),
+	&"r1": Rect2(0, 80, 120, 70),
+	&"r2": Rect2(176, 80, 120, 70),
+	&"r3": Rect2(352, 80, 120, 70),
+	&"r8": Rect2(528, 80, 120, 70),
+	&"r9": Rect2(704, 80, 120, 70),
+	&"r10": Rect2(880, 80, 120, 70),
+	&"r4": Rect2(176, 220, 120, 70),
+	&"r5": Rect2(352, 220, 120, 70),
+	&"r6": Rect2(528, 220, 120, 70),
+	&"r7": Rect2(704, 220, 120, 70),
 }
 var map_links := [
-	[&"r1", &"r2"], [&"r2", &"r3"], [&"r2", &"r4"],
-	[&"r4", &"r5"], [&"r5", &"r6"], [&"r6", &"r7"], [&"r2", &"r6"],
+	[&"r1", &"r2"], [&"r2", &"r3"], [&"r3", &"r8"], [&"r8", &"r9"], [&"r9", &"r10"],
+	[&"r2", &"r4"], [&"r4", &"r5"], [&"r5", &"r6"], [&"r6", &"r7"], [&"r2", &"r6"],
 ]
 
 
@@ -69,6 +80,21 @@ func show_ending() -> void:
 
 func set_prompt(text: String) -> void:
 	prompt_text = text
+	queue_redraw()
+
+
+func set_dialogue(v: bool, npc_name := "", text := "", shop: Array = [], index := 0, mode := "") -> void:
+	dialogue_visible = v
+	dialogue_name = npc_name
+	dialogue_text = text
+	dialogue_shop = shop
+	dialogue_index = index
+	dialogue_mode = mode
+	queue_redraw()
+
+
+func set_dialogue_feedback(text: String) -> void:
+	dialogue_feedback = text
 	queue_redraw()
 
 
@@ -121,9 +147,12 @@ func _draw() -> void:
 	_draw_soul()
 	_draw_geo(w)
 	_draw_banner(w)
-	_draw_toasts(w, h)
-	_draw_prompt(w, h)
-	_draw_boss(w, h)
+	if not (dialogue_visible or map_visible or pause_visible):
+		_draw_toasts(w, h)
+		if not boss_active:
+			_draw_prompt(w, h)
+		_draw_boss(w, h)
+	_draw_dialogue(w, h)
 
 	if pause_visible:
 		_draw_pause(w, h)
@@ -160,7 +189,7 @@ func _draw_soul() -> void:
 	var c := Vector2(84, 148)
 	var r := 27.0
 	draw_circle(c, r, Color(0.03, 0.05, 0.08, 0.9))
-	var ratio: float = clampf(Game.soul / Game.MAX_SOUL, 0.0, 1.0)
+	var ratio: float = clampf(Game.soul / Game.max_soul, 0.0, 1.0)
 	draw_arc(c, r - 2.0, 0.0, TAU, 40, Color(0.12, 0.2, 0.26, 0.9), 4.0, true)
 	if ratio > 0.01:
 		draw_arc(c, r - 2.0, -PI * 0.5, -PI * 0.5 + TAU * ratio, 40, Color(Utils.C_SOUL, 0.95), 4.0, true)
@@ -240,6 +269,65 @@ func _draw_boss(w: float, h: float) -> void:
 	draw_line(Vector2(bx, by + 10.0), Vector2(bx + bw, by + 10.0), Color(0.45, 0.2, 0.18, 0.8), 1.0)
 
 
+func _draw_dialogue(w: float, h: float) -> void:
+	if not dialogue_visible:
+		return
+	var panel_w := 880.0
+	var panel := Rect2((w - panel_w) * 0.5, h - 460.0, panel_w, 420.0)
+	draw_rect(panel, Color(0.012, 0.02, 0.033, 0.985))
+	draw_rect(panel, Color(Utils.C_RIM, 0.3), false, 1.5)
+
+	# name plate
+	var plate := Rect2(panel.position.x + 30, panel.position.y - 22, 260, 44)
+	draw_rect(plate, Color(0.025, 0.04, 0.06, 0.98))
+	draw_rect(plate, Color(Utils.C_WARM, 0.45), false, 1.2)
+	draw_string(font, Vector2(plate.position.x + 18, plate.position.y + 29), dialogue_name,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(Utils.C_WARM, 0.95))
+
+	# dialogue text
+	var ty := panel.position.y + 66.0
+	for line in dialogue_text.split("\n"):
+		draw_string(font, Vector2(panel.position.x + 44, ty), line,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Utils.C_TEXT)
+		ty += 32.0
+
+	if dialogue_mode == "shop":
+		ty += 14.0
+		draw_line(Vector2(panel.position.x + 32, ty - 22), Vector2(panel.end.x - 32, ty - 22),
+			Color(Utils.C_RIM, 0.25), 1.0)
+		for i in range(dialogue_shop.size()):
+			var item: Dictionary = dialogue_shop[i]
+			var row_y := ty + i * 46.0
+			if i == dialogue_index:
+				draw_rect(Rect2(panel.position.x + 26, row_y - 27, panel_w - 52, 40), Color(Utils.C_RIM, 0.1))
+				draw_rect(Rect2(panel.position.x + 26, row_y - 27, 3, 40), Color(Utils.C_SOUL, 0.9))
+			var key: StringName = item.get("key", &"")
+			var sold_out := Game.shop_bought(key) >= int(item.get("max", 1))
+			var name_col := Color(Utils.C_TEXT_DIM, 0.55) if sold_out else Utils.C_TEXT
+			draw_string(font, Vector2(panel.position.x + 68, row_y), String(item.get("name", "")),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 21, name_col)
+			draw_string(font, Vector2(panel.position.x + 250, row_y), String(item.get("desc", "")),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_TEXT_DIM, 0.8))
+			var price_text := "已售罄" if sold_out else "%d 吉欧" % int(item.get("price", 0))
+			var price_col := Color(Utils.C_TEXT_DIM, 0.75) if sold_out else Utils.C_GEO
+			var psz := font.get_string_size(price_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 19)
+			draw_string(font, Vector2(panel.end.x - 44.0 - psz.x, row_y), price_text,
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 19, price_col)
+		draw_string(font, Vector2(panel.position.x + 44, panel.end.y - 28),
+			"W/S 选择    E 购买    Esc 离开", HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_TEXT_DIM, 0.85))
+		if not dialogue_feedback.is_empty():
+			draw_string(font, Vector2(panel.position.x + 44, panel.end.y - 62), dialogue_feedback,
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(Utils.C_WARM, 0.95))
+		var geo_text := "持有 %d 吉欧" % Game.geo
+		var gsz := font.get_string_size(geo_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 17)
+		draw_string(font, Vector2(panel.end.x - 44.0 - gsz.x, panel.end.y - 28), geo_text,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_GEO, 0.8))
+	else:
+		var blink := 0.55 + 0.45 * sin(time * 3.0)
+		draw_string(font, Vector2(panel.end.x - 160, panel.end.y - 28), "E  继续",
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color(Utils.C_SOUL, blink))
+
+
 func _draw_title(w: float, h: float) -> void:
 	draw_rect(Rect2(0, 0, w, h), Color(0.008, 0.012, 0.022, 0.84))
 	var cx := w * 0.5
@@ -309,6 +397,21 @@ func _draw_map(w: float, h: float) -> void:
 			label = RoomData.room_name(id)
 		var sz := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 17)
 		draw_string(font, rr.position + Vector2((r.size.x - sz.x) * 0.5, r.size.y * 0.5 + 6.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_TEXT, 0.9))
+	var explored := 0
+	for id in map_rooms:
+		if Game.visited.has(id):
+			explored += 1
+	var lx := panel.position.x + 40.0
+	var ly := panel.end.y - 56.0
+	draw_rect(Rect2(lx, ly - 16, 26, 18), Color(Utils.C_RIM, 0.85))
+	draw_string(font, Vector2(lx + 34, ly), "当前房间", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Utils.C_TEXT_DIM, 0.9))
+	draw_rect(Rect2(lx + 150, ly - 16, 26, 18), Color(0.22, 0.3, 0.4, 0.9))
+	draw_string(font, Vector2(lx + 184, ly), "已探索", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Utils.C_TEXT_DIM, 0.9))
+	draw_rect(Rect2(lx + 290, ly - 16, 26, 18), Color(0.1, 0.13, 0.18, 0.7))
+	draw_string(font, Vector2(lx + 324, ly), "未探索", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Utils.C_TEXT_DIM, 0.9))
+	var count_text := "已探索 %d / %d" % [explored, map_rooms.size()]
+	var csz := font.get_string_size(count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
+	draw_string(font, Vector2(panel.end.x - 40.0 - csz.x, ly), count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Utils.C_TEXT_DIM, 0.9))
 	_ctext("Tab  关闭地图", h - 58, 20, Utils.C_TEXT_DIM)
 
 
@@ -321,6 +424,9 @@ func _draw_ending(w: float, h: float) -> void:
 	var stats := "吉欧 %d     倒下 %d 次     旅途 %d 分 %d 秒" % [Game.geo, Game.deaths, mins, secs]
 	_ctext(stats, h * 0.52, 22, Utils.C_TEXT_DIM)
 	draw_line(Vector2(w * 0.35, h * 0.58), Vector2(w * 0.65, h * 0.58), Color(Utils.C_RIM, 0.3), 1.0)
-	_ctext("但深井之下，还有别的回响在等待。", h * 0.65, 19, Color(Utils.C_TEXT_DIM, 0.8))
+	if Game.bosses_defeated.has("bell"):
+		_ctext("钟声停了。所有的回响都已安息。", h * 0.65, 19, Color(Utils.C_TEXT_DIM, 0.8))
+	else:
+		_ctext("但深井之下，还有别的回响在等待。", h * 0.65, 19, Color(Utils.C_TEXT_DIM, 0.8))
 	var blink := 0.55 + 0.45 * sin(time * 3.0)
 	_ctext("按 R 重新开始", h * 0.82, 26, Color(Utils.C_SOUL, blink))

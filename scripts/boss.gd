@@ -8,6 +8,10 @@ enum State { INTRO, WALK, TELEGRAPH_SLAM, SLAM, RECOVER, TELEGRAPH_CHARGE, CHARG
 var max_hp := 60
 var hp := 60
 var phase := 1
+var boss_id := "guard"
+var boss_name := "残破守卫"
+var final_boss := true
+var phase2_text := "铠甲碎裂了。守卫的怒火更加猛烈。"
 var arena := Rect2()
 var player: Player
 var world: GameWorld
@@ -25,9 +29,15 @@ var gate_visuals: Array[Node2D] = []
 var rng := RandomNumberGenerator.new()
 
 
-func setup(pos: Vector2, arena_rect: Rect2) -> void:
+func setup(pos: Vector2, arena_rect: Rect2, config := {}) -> void:
 	position = pos
 	arena = arena_rect
+	boss_id = String(config.get("id", "guard"))
+	boss_name = String(config.get("name", "残破守卫"))
+	max_hp = int(config.get("hp", 60))
+	hp = max_hp
+	final_boss = bool(config.get("final", true))
+	phase2_text = String(config.get("phase2_text", "铠甲碎裂了。守卫的怒火更加猛烈。"))
 	rng.randomize()
 
 
@@ -55,7 +65,7 @@ func _ready() -> void:
 
 	z_index = 4
 	anim_time = randf() * 10.0
-	Game.boss_state.emit(true, "残破守卫", hp, max_hp)
+	Game.boss_state.emit(true, boss_name, hp, max_hp)
 	call_deferred("_spawn_gates")
 
 
@@ -197,7 +207,8 @@ func _physics_process(delta: float) -> void:
 			timer -= delta
 			if timer <= 0.0:
 				state = State.DEAD
-				Game.trigger_ending()
+				if final_boss:
+					Game.trigger_ending()
 				return
 
 	if not is_on_floor():
@@ -244,10 +255,10 @@ func take_hit(damage: int, dir: Vector2, _src) -> void:
 		world.spawn_hit(global_position + Vector2(0, -90), dir)
 	if phase == 1 and hp <= max_hp / 2:
 		phase = 2
-		Game.toast.emit("铠甲碎裂了。守卫的怒火更加猛烈。")
+		Game.toast.emit(phase2_text)
 		if world != null:
 			world.spawn_death_burst(global_position + Vector2(0, -100), Color(1.0, 0.45, 0.3))
-	Game.boss_state.emit(true, "残破守卫", hp, max_hp)
+	Game.boss_state.emit(true, boss_name, hp, max_hp)
 	if hp <= 0:
 		_defeat()
 
@@ -257,12 +268,15 @@ func _defeat() -> void:
 	timer = 1.9
 	_open_gates()
 	Game.boss_state.emit(false, "", 0, 1)
+	Game.bosses_defeated[boss_id] = true
 	defeated.emit()
 	if world != null:
 		world.spawn_death_burst(global_position + Vector2(0, -110), Color(1.0, 0.75, 0.5))
 		world.spawn_death_burst(global_position + Vector2(0, -70), Color(0.8, 0.9, 1.0))
 		if world.camera != null:
 			world.camera.add_shake(16.0)
+	if not final_boss:
+		Game.reward_echo_boss()
 
 
 func _draw() -> void:

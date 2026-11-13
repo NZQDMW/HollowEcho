@@ -35,6 +35,7 @@ func setup(room_data: Dictionary) -> void:
 	_build_pits()
 	_build_gates()
 	_build_bench_and_signs()
+	_build_npcs()
 	_build_pickups()
 	_build_enemies()
 	_build_boss()
@@ -181,6 +182,19 @@ func _build_bench_and_signs() -> void:
 			add_child(node)
 
 
+func _build_npcs() -> void:
+	var scr := _load_script("res://scripts/npc.gd")
+	if scr == null:
+		return
+	for n in data.get("npcs", []):
+		var def := NpcData.get_npc(n["id"])
+		if def.is_empty():
+			continue
+		var node = scr.new()
+		node.setup(n["pos"], def)
+		add_child(node)
+
+
 func _build_pickups() -> void:
 	var scr := _load_script("res://scripts/pickup.gd")
 	if scr == null:
@@ -217,6 +231,8 @@ func _build_enemies() -> void:
 		"crawler": "res://scripts/crawler.gd",
 		"flyer": "res://scripts/flyer.gd",
 		"husk": "res://scripts/husk.gd",
+		"spitter": "res://scripts/spitter.gd",
+		"hopper": "res://scripts/hopper.gd",
 	}
 	for e in data.get("enemies", []):
 		var path: String = map.get(e["type"], "")
@@ -234,11 +250,14 @@ func _build_boss() -> void:
 	var boss_data: Dictionary = data.get("boss", {})
 	if boss_data.is_empty():
 		return
+	var boss_key := String(boss_data.get("id", "guard"))
+	if Game.bosses_defeated.has(boss_key):
+		return
 	var scr := _load_script("res://scripts/boss.gd")
 	if scr == null:
 		return
 	var node = scr.new()
-	node.setup(boss_data["pos"], boss_data.get("arena", bounds))
+	node.setup(boss_data["pos"], boss_data.get("arena", bounds), boss_data)
 	add_child(node)
 
 
@@ -290,7 +309,80 @@ func _draw() -> void:
 	for p in lanterns:
 		_draw_lantern(p)
 
+	_draw_props()
 	_draw_decor(accent)
+
+
+func _draw_props() -> void:
+	for p in data.get("props", []):
+		var pos: Vector2 = p["pos"]
+		match String(p.get("type", "")):
+			"stall": _draw_stall(pos)
+			"crate": _draw_crate(pos)
+			"bell": _draw_bell(pos)
+			"pillar": _draw_pillar(pos)
+
+
+func _draw_stall(p: Vector2) -> void:
+	# posts
+	draw_line(p + Vector2(-58, -34), p + Vector2(-58, 0), Color(0.18, 0.14, 0.1), 4.0)
+	draw_line(p + Vector2(58, -34), p + Vector2(58, 0), Color(0.18, 0.14, 0.1), 4.0)
+	# counter
+	draw_rect(Rect2(p + Vector2(-56, -36), Vector2(112, 36)), Color(0.2, 0.16, 0.13))
+	draw_line(p + Vector2(-56, -36), p + Vector2(56, -36), Color(Utils.C_WARM, 0.55), 2.0)
+	# canopy
+	draw_colored_polygon(PackedVector2Array([
+		p + Vector2(-74, -118), p + Vector2(74, -118), p + Vector2(56, -146), p + Vector2(-56, -146)
+	]), Color(0.42, 0.19, 0.17, 0.9))
+	for i in range(4):
+		var x := -62.0 + i * 31.0
+		draw_colored_polygon(PackedVector2Array([
+			p + Vector2(x, -118), p + Vector2(x + 17, -118),
+			p + Vector2(x + 9, -146), p + Vector2(x - 8, -146)
+		]), Color(0.74, 0.6, 0.34, 0.5))
+	draw_line(p + Vector2(-74, -118), p + Vector2(74, -118), Color(Utils.C_WARM, 0.45), 2.0)
+	# goods
+	draw_circle(p + Vector2(-26, -46), 6.5, Color(0.9, 0.75, 0.42))
+	draw_circle(p + Vector2(-8, -44), 5.0, Color(0.5, 0.82, 0.76))
+	draw_circle(p + Vector2(12, -46), 6.0, Color(0.78, 0.52, 0.46))
+	draw_circle(p + Vector2(30, -44), 4.5, Color(0.7, 0.68, 0.55))
+
+
+func _draw_crate(p: Vector2) -> void:
+	draw_rect(Rect2(p + Vector2(-26, -46), Vector2(52, 46)), Color(0.23, 0.18, 0.13))
+	draw_rect(Rect2(p + Vector2(-26, -46), Vector2(52, 46)), Color(Utils.C_WARM, 0.25), false, 1.5)
+	draw_line(p + Vector2(-26, -30), p + Vector2(26, -30), Color(0.14, 0.11, 0.08), 2.0)
+	draw_line(p + Vector2(-26, -16), p + Vector2(26, -16), Color(0.14, 0.11, 0.08), 2.0)
+	draw_rect(Rect2(p + Vector2(-16, -72), Vector2(34, 26)), Color(0.2, 0.16, 0.12))
+	draw_rect(Rect2(p + Vector2(-16, -72), Vector2(34, 26)), Color(Utils.C_WARM, 0.2), false, 1.2)
+
+
+func _draw_bell(p: Vector2) -> void:
+	draw_line(Vector2(p.x, 0), p + Vector2(0, -42), Color(0.25, 0.24, 0.2), 3.0)
+	draw_circle(p + Vector2(0, 24), 44.0, Color(Utils.C_WARM, 0.045))
+	draw_colored_polygon(PackedVector2Array([
+		p + Vector2(-8, -42), p + Vector2(8, -42), p + Vector2(36, 18),
+		p + Vector2(25, 31), p + Vector2(-25, 31), p + Vector2(-36, 18)
+	]), Color(0.29, 0.27, 0.21))
+	draw_colored_polygon(PackedVector2Array([
+		p + Vector2(-23, 23), p + Vector2(23, 23), p + Vector2(16, 31), p + Vector2(-16, 31)
+	]), Color(0.4, 0.36, 0.25))
+	draw_line(p + Vector2(-8, -42), p + Vector2(-36, 18), Color(Utils.C_WARM, 0.45), 2.0)
+	draw_circle(p + Vector2(0, 35), 5.0, Color(0.42, 0.37, 0.26))
+
+
+func _draw_pillar(p: Vector2) -> void:
+	draw_rect(Rect2(p + Vector2(-34, -6), Vector2(68, 6)), Color(0.16, 0.15, 0.19))
+	draw_colored_polygon(PackedVector2Array([
+		p + Vector2(-26, -6), p + Vector2(-22, -190), p + Vector2(24, -190), p + Vector2(28, -6)
+	]), Color(0.19, 0.18, 0.23))
+	for i in range(3):
+		var x := -14.0 + i * 14.0
+		draw_line(p + Vector2(x, -12), p + Vector2(x * 0.9, -184), Color(Utils.C_RIM, 0.1), 2.0)
+	draw_colored_polygon(PackedVector2Array([
+		p + Vector2(-22, -190), p + Vector2(-10, -206), p + Vector2(2, -194),
+		p + Vector2(14, -208), p + Vector2(24, -190)
+	]), Color(0.22, 0.2, 0.26))
 
 
 func _draw_ground_details(rect: Rect2, seed_value: int, accent: Color) -> void:

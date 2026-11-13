@@ -27,7 +27,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	time += delta
 	queue_redraw()
-	if in_range and Input.is_action_just_pressed("interact"):
+	if in_range and Game.dialogue_cooldown <= 0.0 and Input.is_action_just_pressed("interact"):
 		Game.toast.emit(message)
 
 

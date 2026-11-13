@@ -82,6 +82,16 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	# Ground enemies that fall out of the room return to their post instead
+	# of being stranded at the bottom of a gap.
+	if use_gravity and get_parent() != null:
+		var room_bounds = get_parent().get("bounds")
+		if typeof(room_bounds) == TYPE_RECT2:
+			var rb: Rect2 = room_bounds
+			if global_position.y > rb.end.y - 20.0:
+				global_position = home
+				velocity = Vector2.ZERO
+
 	if player != null and not player.dead and player.invuln <= 0.0 and touch_area.overlaps_body(player):
 		player.take_damage(contact_damage, global_position)
 

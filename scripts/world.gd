@@ -156,5 +156,14 @@ func spawn_shockwave(pos: Vector2, dir: int) -> void:
 	_fx_parent().add_child(node)
 
 
+func spawn_acid(pos: Vector2, vel: Vector2) -> void:
+	var scr := _load_script("res://scripts/projectile.gd")
+	if scr == null:
+		return
+	var node = scr.new()
+	node.setup_acid(pos, vel)
+	_fx_parent().add_child(node)
+
+
 func _on_focus_completed() -> void:
 	spawn_focus_burst(player.global_position + Vector2(0, -58))

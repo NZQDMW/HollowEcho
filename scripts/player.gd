@@ -306,7 +306,7 @@ func _attack_query() -> void:
 		if attack_hits.has(id):
 			continue
 		attack_hits[id] = true
-		body.take_hit(ATTACK_DAMAGE, attack_dir, self)
+		body.take_hit(ATTACK_DAMAGE + Game.nail_bonus, attack_dir, self)
 		Game.add_soul(10.0)
 		attack_hit.emit(body.global_position, attack_dir)
 		if attack_dir == Vector2.DOWN:

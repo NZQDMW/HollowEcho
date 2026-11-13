@@ -14,7 +14,16 @@ No image-generation API/key is available on this machine (Gemini/xAI/Tripo keys 
 | crawler | vector enemy | ~100x50 px | beetle, orange glowing eyes, patrols platforms |
 | flyer | vector enemy | ~80x60 px | moth-like, bobbing chase flight |
 | husk | vector enemy | ~140 px tall | tall husk guard, club lunge |
+| spitter | vector enemy | ~95x70 px | acid sac pulsing green, funnel mouth, telegraph arc |
+| hopper | vector enemy | ~90x60 px | crouched flea, glowing ridge, leap toward player |
+| acid bolt | procedural projectile | ~30 px | wobbling green blob with dripping trail |
+| merchant 灰烬商人·墨 | vector NPC | ~150 px tall | wide hat, back pack, staff lantern, warm eyes |
+| lorekeeper 记录者·铃 | vector NPC | ~120 px tall | seated on a ledge, open glowing book, small bell |
 | boss 残破守卫 | vector boss | ~260 px tall | armored husk with mace; slam/charge/rage phases |
+| boss 钟鸣守卫 | vector boss | ~260 px tall | same rig, bell-cave palette; optional reward boss |
+| bell prop | procedural | ~120 px | suspended bronze bell with warm halo |
+| market stall | procedural | ~150 px | striped canopy, counter with glowing goods |
+| crate / pillar | procedural props | ~80 px / ~210 px | stacked boxes; broken fluted column |
 | shade | vector ghost | ~110 px tall | black echo of the knight, white eyes, holds lost geo |
 | terrain | procedural | per room | dark rock polygons, cyan rim light, cracks, moss tufts, hanging vines |
 | backdrop | procedural | 3 layers | far/mid/near cave silhouettes, light shafts, glow dots, parallax |

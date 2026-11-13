@@ -1,0 +1,85 @@
+extends Node
+
+var game
+var frame := 0
+var moment := "market"
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--moment="):
+			moment = arg.substr(9)
+	var packed: PackedScene = load("res://scenes/main.tscn")
+	game = packed.instantiate()
+	add_child(game)
+
+
+func find_npc(id: String):
+	if game.world.room == null:
+		return null
+	for n in game.world.room.get_children():
+		if n.get_script() == load("res://scripts/npc.gd") and String(n.npc_id) == id:
+			return n
+	return null
+
+
+func find_boss():
+	if game.world.room == null:
+		return null
+	for n in game.world.room.get_children():
+		if n.get_script() == load("res://scripts/boss.gd"):
+			return n
+	return null
+
+
+func _setup() -> void:
+	var gm = get_tree().root.get_node_or_null("Game")
+	game.debug_start()
+	var p = game.world.player
+	if p != null:
+		p.debug_invincible = true
+	match moment:
+		"market":
+			game.debug_goto(&"r8", Vector2(600, 760))
+		"shop":
+			game.debug_goto(&"r8", Vector2(600, 760))
+			if gm != null:
+				gm.geo = 120
+				gm.geo_changed.emit(gm.geo)
+			game.open_dialogue(find_npc("merchant"))
+		"lore":
+			game.debug_goto(&"r8", Vector2(1270, 620))
+			game.open_dialogue(find_npc("lorekeeper"))
+		"cavern":
+			game.debug_goto(&"r9", Vector2(1980, 1200))
+		"mask":
+			game.debug_goto(&"r9", Vector2(2050, 860))
+		"boss":
+			game.debug_goto(&"r10", Vector2(700, 620))
+		"map":
+			game.debug_goto(&"r1", Vector2(360, 680))
+			game.debug_goto(&"r2", Vector2(170, 1200))
+			game.debug_goto(&"r3", Vector2(170, 780))
+			game.debug_goto(&"r8", Vector2(600, 760))
+		"reward":
+			game.debug_goto(&"r10", Vector2(700, 620))
+
+
+func _process(_delta: float) -> void:
+	frame += 1
+	if frame == 5:
+		_setup()
+	if moment == "shop" and frame == 16:
+		game._advance_dialogue()
+		game._advance_dialogue()
+	if moment == "map" and frame == 120:
+		game._toggle_map()
+	if moment == "boss" and frame == 32:
+		var b = find_boss()
+		if b != null:
+			b.take_hit(26, Vector2.RIGHT, null)
+	if moment == "reward" and frame == 24:
+		var b2 = find_boss()
+		if b2 != null:
+			b2.take_hit(48, Vector2.RIGHT, null)

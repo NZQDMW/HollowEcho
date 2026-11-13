@@ -1,6 +1,6 @@
 extends Area2D
 
-enum Kind { SPELL, SHOCKWAVE }
+enum Kind { SPELL, SHOCKWAVE, ACID }
 
 var kind: Kind = Kind.SPELL
 var velocity := Vector2.ZERO
@@ -29,16 +29,31 @@ func setup_shockwave(pos: Vector2, direction: int) -> void:
 	life = 1.5
 
 
+func setup_acid(pos: Vector2, vel: Vector2) -> void:
+	kind = Kind.ACID
+	position = pos
+	velocity = vel
+	dir = 1 if vel.x >= 0.0 else -1
+	damage = 1
+	life = 2.2
+
+
 func _ready() -> void:
 	collision_layer = 0
 	if kind == Kind.SPELL:
 		collision_mask = Utils.L_WORLD | Utils.L_ENEMY
+	elif kind == Kind.ACID:
+		collision_mask = Utils.L_WORLD | Utils.L_PLAYER
 	else:
 		collision_mask = Utils.L_PLAYER
 	var cs := CollisionShape2D.new()
 	if kind == Kind.SPELL:
 		var shape := CircleShape2D.new()
 		shape.radius = 16.0
+		cs.shape = shape
+	elif kind == Kind.ACID:
+		var shape := CircleShape2D.new()
+		shape.radius = 13.0
 		cs.shape = shape
 	else:
 		var shape := RectangleShape2D.new()
@@ -72,6 +87,16 @@ func _on_body_entered(body: Node) -> void:
 			_burst(Utils.C_RIM)
 		dead = true
 		queue_free()
+	elif kind == Kind.ACID:
+		if body is Player:
+			body.take_damage(damage, global_position)
+			_burst(Color(0.55, 0.85, 0.4))
+			dead = true
+			queue_free()
+		elif body is StaticBody2D:
+			_burst(Color(0.45, 0.7, 0.35))
+			dead = true
+			queue_free()
 	else:
 		if body is Player:
 			body.take_damage(damage, global_position)
@@ -100,6 +125,19 @@ func _draw() -> void:
 		]), Color(Utils.C_SOUL, 0.92 * flicker))
 		draw_circle(c, 8.0, Color(0.85, 0.98, 1.0, 0.85))
 		draw_circle(c, 18.0, Color(Utils.C_SOUL, 0.12))
+	elif kind == Kind.ACID:
+		var wobble := sin(time * 22.0) * 2.5
+		# dripping trail
+		for i in range(3):
+			draw_circle(
+				Vector2(-dir * (14.0 + i * 12.0), wobble * (0.5 + i * 0.3)),
+				5.5 - i * 1.2, Color(0.5, 0.8, 0.35, 0.22 - i * 0.05)
+			)
+		# blob
+		draw_colored_polygon(Utils.ellipse_points(Vector2(0, wobble), 14, 11, 18), Color(0.48, 0.78, 0.32, 0.9))
+		draw_circle(Vector2(-3, -3 + wobble), 4.5, Color(0.78, 0.97, 0.6, 0.8))
+		draw_circle(Vector2(4, 3 + wobble), 3.0, Color(0.32, 0.55, 0.2, 0.8))
+		draw_circle(Vector2(0, wobble), 18.0, Color(0.5, 0.85, 0.35, 0.1))
 	else:
 		var flip := 1.0 if int(time * 16.0) % 2 == 0 else 0.85
 		var pts := PackedVector2Array()

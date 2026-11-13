@@ -11,6 +11,9 @@ static func room_name(id: StringName) -> String:
 		&"r5": return "石壁回廊"
 		&"r6": return "王座前厅"
 		&"r7": return "破碎王座"
+		&"r8": return "静默集市"
+		&"r9": return "钟鸣洞窟"
+		&"r10": return "回响之厅"
 	return "未知之地"
 
 
@@ -22,6 +25,9 @@ static func get_room(id: StringName) -> Dictionary:
 		&"r5": return _r5()
 		&"r6": return _r6()
 		&"r7": return _r7()
+		&"r8": return _r8()
+		&"r9": return _r9()
+		&"r10": return _r10()
 	return _r1()
 
 
@@ -135,6 +141,7 @@ static func _r3() -> Dictionary:
 		],
 		"doors": [
 			{"side": "left", "trigger": Rect2(0, 560, 80, 260), "spawn": Vector2(170, 780), "target": &"r2", "target_door": 1},
+			{"side": "right", "trigger": Rect2(2120, 540, 80, 260), "spawn": Vector2(2030, 780), "target": &"r8", "target_door": 0},
 		],
 		"gates": [],
 		"enemies": [
@@ -246,6 +253,7 @@ static func _r5() -> Dictionary:
 		"enemies": [
 			{"type": "flyer", "pos": Vector2(600, 700)},
 			{"type": "husk", "pos": Vector2(1200, 1340), "min_x": 900, "max_x": 1550},
+			{"type": "spitter", "pos": Vector2(520, 1340), "min_x": 260, "max_x": 760},
 		],
 		"pickups": [
 			{"type": "geo", "pos": Vector2(500, 500), "amount": 10},
@@ -292,6 +300,7 @@ static func _r6() -> Dictionary:
 		"enemies": [
 			{"type": "husk", "pos": Vector2(900, 760), "min_x": 500, "max_x": 1350},
 			{"type": "flyer", "pos": Vector2(1400, 500)},
+			{"type": "hopper", "pos": Vector2(900, 760), "min_x": 600, "max_x": 1380},
 		],
 		"pickups": [
 			{"type": "geo", "pos": Vector2(1250, 560), "amount": 12},
@@ -338,6 +347,166 @@ static func _r7() -> Dictionary:
 		"lanterns": [Vector2(400, 620), Vector2(1400, 620)],
 		"signs": [],
 		"hazards": [],
-		"boss": {"pos": Vector2(1250, 620), "arena": Rect2(160, 0, 1480, 620)},
+		"boss": {
+			"id": &"guard", "pos": Vector2(1250, 620),
+			"arena": Rect2(160, 0, 1480, 620),
+			"name": "残破守卫", "hp": 60, "final": true,
+		},
 		"arena": Rect2(160, 0, 1480, 620),
+	}
+
+
+static func _r8() -> Dictionary:
+	return {
+		"id": &"r8",
+		"name": "静默集市",
+		"seed": 89,
+		"size": Vector2(2000, 900),
+		"spawn": Vector2(170, 760),
+		"theme": {"bg1": Color(0.03, 0.04, 0.06), "bg2": Color(0.08, 0.11, 0.15), "accent": Color(1.0, 0.7, 0.42)},
+		"ground": [
+			{"rect": Rect2(0, 760, 2000, 140), "seed": 101},
+		],
+		"ledges": [
+			{"rect": Rect2(300, 620, 240, 26), "seed": 102},
+			{"rect": Rect2(1150, 620, 260, 26), "seed": 103},
+			{"rect": Rect2(1580, 640, 240, 26), "seed": 104},
+		],
+		"doors": [
+			{"side": "left", "trigger": Rect2(0, 520, 80, 260), "spawn": Vector2(170, 760), "target": &"r3", "target_door": 1},
+			{"side": "right", "trigger": Rect2(1920, 520, 80, 260), "spawn": Vector2(1760, 760), "target": &"r9", "target_door": 0},
+		],
+		"gates": [
+			{"rect": Rect2(1820, 280, 40, 480), "relic": &"key", "hint": "门锁锈死了。集市里也许有人卖钥匙。"},
+		],
+		"enemies": [],
+		"pickups": [
+			{"type": "geo", "pos": Vector2(1000, 700), "amount": 6},
+		],
+		"relics": [],
+		"mask_shards": [],
+		"benches": [Vector2(250, 760)],
+		"lanterns": [Vector2(420, 760), Vector2(1050, 760), Vector2(1720, 760)],
+		"signs": [
+			{"pos": Vector2(880, 760), "text": "静默集市。\n王国沉没之后，只有这里的灯还亮着。"},
+			{"pos": Vector2(1500, 760), "text": "东边的门通向钟鸣洞窟。\n记录者说，钟声从来没有停过。"},
+		],
+		"npcs": [
+			{"id": &"merchant", "pos": Vector2(620, 760)},
+			{"id": &"lorekeeper", "pos": Vector2(1270, 620)},
+		],
+		"props": [
+			{"type": "stall", "pos": Vector2(430, 760)},
+			{"type": "stall", "pos": Vector2(1440, 760)},
+			{"type": "crate", "pos": Vector2(760, 760)},
+			{"type": "crate", "pos": Vector2(1780, 760)},
+		],
+		"hazards": [],
+		"boss": {},
+		"arena": Rect2(),
+	}
+
+
+static func _r9() -> Dictionary:
+	return {
+		"id": &"r9",
+		"name": "钟鸣洞窟",
+		"seed": 97,
+		"size": Vector2(2400, 1400),
+		"spawn": Vector2(170, 1200),
+		"theme": {"bg1": Color(0.025, 0.05, 0.045), "bg2": Color(0.07, 0.12, 0.1), "accent": Color(0.85, 0.75, 0.4)},
+		"ground": [
+			{"rect": Rect2(0, 1200, 1000, 200), "seed": 111},
+			{"rect": Rect2(1200, 1200, 500, 200), "seed": 112},
+			{"rect": Rect2(1800, 1200, 600, 200), "seed": 113},
+		],
+		"ledges": [
+			{"rect": Rect2(250, 1060, 280, 26), "seed": 114},
+			{"rect": Rect2(620, 920, 260, 26), "seed": 115},
+			{"rect": Rect2(1000, 1060, 240, 26), "seed": 116},
+			{"rect": Rect2(1380, 900, 280, 26), "seed": 117},
+			{"rect": Rect2(1720, 1060, 260, 26), "seed": 118},
+			{"rect": Rect2(2020, 920, 300, 26), "seed": 119},
+		],
+		"doors": [
+			{"side": "left", "trigger": Rect2(0, 960, 80, 260), "spawn": Vector2(170, 1200), "target": &"r8", "target_door": 1},
+			{"side": "right", "trigger": Rect2(2320, 960, 80, 260), "spawn": Vector2(2250, 1200), "target": &"r10", "target_door": 0},
+		],
+		"gates": [],
+		"enemies": [
+			{"type": "hopper", "pos": Vector2(400, 1200), "min_x": 180, "max_x": 820},
+			{"type": "crawler", "pos": Vector2(1500, 1200), "min_x": 1250, "max_x": 1680},
+			{"type": "spitter", "pos": Vector2(2120, 1200), "min_x": 1850, "max_x": 2330},
+			{"type": "flyer", "pos": Vector2(900, 760)},
+		],
+		"pickups": [
+			{"type": "geo", "pos": Vector2(700, 880), "amount": 8},
+			{"type": "geo", "pos": Vector2(1900, 1000), "amount": 10},
+			{"type": "geo", "pos": Vector2(2250, 860), "amount": 12},
+		],
+		"relics": [],
+		"mask_shards": [
+			{"pos": Vector2(2140, 860)},
+		],
+		"benches": [],
+		"lanterns": [Vector2(300, 1200), Vector2(1450, 1200), Vector2(2150, 1200)],
+		"signs": [
+			{"pos": Vector2(260, 1200), "text": "钟鸣洞窟。\n岩壁里嵌着旧钟的碎片，踩上去会发出很低的嗡鸣。"},
+			{"pos": Vector2(1290, 1200), "text": "裂隙很深。掉下去会被送回崖边，但会失去一格生命。"},
+		],
+		"npcs": [],
+		"props": [
+			{"type": "bell", "pos": Vector2(1700, 300)},
+		],
+		"hazards": [],
+		"pits": [
+			{"rect": Rect2(1000, 1340, 200, 60), "respawn": Vector2(950, 1200)},
+		],
+		"boss": {},
+		"arena": Rect2(),
+	}
+
+
+static func _r10() -> Dictionary:
+	return {
+		"id": &"r10",
+		"name": "回响之厅",
+		"seed": 103,
+		"size": Vector2(1800, 800),
+		"spawn": Vector2(250, 620),
+		"theme": {"bg1": Color(0.04, 0.03, 0.05), "bg2": Color(0.11, 0.08, 0.12), "accent": Color(0.9, 0.78, 0.42)},
+		"ground": [
+			{"rect": Rect2(0, 620, 1800, 180), "seed": 121},
+		],
+		"ledges": [
+			{"rect": Rect2(280, 470, 200, 24), "seed": 122},
+			{"rect": Rect2(1320, 470, 200, 24), "seed": 123},
+		],
+		"doors": [
+			{"side": "left", "trigger": Rect2(0, 400, 80, 260), "spawn": Vector2(250, 620), "target": &"r9", "target_door": 1},
+		],
+		"gates": [],
+		"enemies": [],
+		"pickups": [],
+		"relics": [],
+		"mask_shards": [],
+		"benches": [],
+		"lanterns": [Vector2(400, 620), Vector2(1400, 620)],
+		"signs": [
+			{"pos": Vector2(360, 620), "text": "回响之厅。\n一口没有绳子的钟悬在头顶，钟舌却一直在响。"},
+		],
+		"npcs": [],
+		"props": [
+			{"type": "bell", "pos": Vector2(1200, 180)},
+			{"type": "pillar", "pos": Vector2(520, 620)},
+			{"type": "pillar", "pos": Vector2(1280, 620)},
+		],
+		"hazards": [],
+		"boss": {
+			"id": &"bell", "pos": Vector2(1250, 620),
+			"arena": Rect2(180, 0, 1440, 620),
+			"name": "钟鸣守卫", "hp": 48, "final": false,
+			"phase2_text": "钟壳裂开了。里面的回响涌了出来。",
+		},
+		"arena": Rect2(180, 0, 1440, 620),
 	}

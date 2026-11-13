@@ -14,6 +14,16 @@ var transitioning := false
 var paused := false
 var map_open := false
 
+var dialogue_open := false
+var dialogue_npc: Node = null
+var dialogue_pages: Array = []
+var dialogue_page := 0
+var dialogue_shop: Array = []
+var dialogue_mode := ""
+var dialogue_index := 0
+var dialogue_lock := 0.0
+var dialogue_feedback := ""
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -59,6 +69,7 @@ func _build() -> void:
 	world.player.damaged.connect(_on_player_damaged)
 	world.player.focus_completed.connect(_on_focus_completed)
 	Game.ending.connect(_on_ending)
+	Game.dialogue_requested.connect(_on_dialogue_requested)
 
 
 func _enter_title() -> void:
@@ -92,6 +103,12 @@ func debug_goto(room_id: StringName, pos: Vector2) -> void:
 	paused = false
 	map_open = false
 	get_tree().paused = false
+	dialogue_open = false
+	dialogue_npc = null
+	dialogue_pages = []
+	dialogue_shop = []
+	dialogue_mode = ""
+	hud.set_dialogue(false)
 	hud.set_paused(false)
 	hud.set_map(false)
 	state = State.PLAYING
@@ -121,6 +138,8 @@ func start_game() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
+	if dialogue_open:
+		return
 	if state == State.TITLE:
 		start_game()
 		get_viewport().set_input_as_handled()
@@ -135,6 +154,129 @@ func _unhandled_input(event: InputEvent) -> void:
 		_toggle_pause()
 	elif event.is_action_pressed("map"):
 		_toggle_map()
+
+
+func _process(delta: float) -> void:
+	if dialogue_lock > 0.0:
+		dialogue_lock = maxf(0.0, dialogue_lock - delta)
+	if dialogue_open:
+		_poll_dialogue_input()
+
+
+func _on_dialogue_requested(npc: Node) -> void:
+	if state != State.PLAYING or dialogue_open or transitioning:
+		return
+	open_dialogue(npc)
+
+
+func open_dialogue(npc: Node) -> void:
+	if state != State.PLAYING or dialogue_open or npc == null:
+		return
+	dialogue_open = true
+	dialogue_npc = npc
+	var pages_v = npc.get("pages")
+	dialogue_pages = pages_v.duplicate() if pages_v is Array else []
+	var shop_v = npc.get("shop_items")
+	dialogue_shop = shop_v.duplicate() if shop_v is Array else []
+	dialogue_page = 0
+	dialogue_index = 0
+	dialogue_mode = "dialogue"
+	dialogue_lock = 0.22
+	dialogue_feedback = ""
+	paused = false
+	map_open = false
+	get_tree().paused = true
+	hud.set_paused(false)
+	hud.set_map(false)
+	world.player.control_enabled = false
+	world.player.velocity = Vector2.ZERO
+	_sync_dialogue_hud()
+
+
+func _sync_dialogue_hud() -> void:
+	if not dialogue_open or dialogue_npc == null:
+		return
+	var text := ""
+	if dialogue_mode == "shop":
+		text = String(dialogue_npc.get("shop_intro"))
+	elif not dialogue_pages.is_empty():
+		dialogue_page = clampi(dialogue_page, 0, dialogue_pages.size() - 1)
+		text = String(dialogue_pages[dialogue_page])
+	hud.set_dialogue(
+		true,
+		String(dialogue_npc.get("npc_name")),
+		text,
+		dialogue_shop if dialogue_mode == "shop" else [],
+		dialogue_index,
+		dialogue_mode
+	)
+	hud.set_dialogue_feedback(dialogue_feedback)
+
+
+func _poll_dialogue_input() -> void:
+	if dialogue_lock > 0.0:
+		return
+	if Input.is_action_just_pressed("pause"):
+		_close_dialogue()
+		return
+	if dialogue_mode == "shop":
+		if Input.is_action_just_pressed("aim_up"):
+			dialogue_index = wrapi(dialogue_index - 1, 0, maxi(dialogue_shop.size(), 1))
+			dialogue_feedback = ""
+			_sync_dialogue_hud()
+		elif Input.is_action_just_pressed("aim_down"):
+			dialogue_index = wrapi(dialogue_index + 1, 0, maxi(dialogue_shop.size(), 1))
+			dialogue_feedback = ""
+			_sync_dialogue_hud()
+		elif Input.is_action_just_pressed("interact") or Input.is_action_just_pressed("jump"):
+			if dialogue_shop.is_empty():
+				_close_dialogue()
+				return
+			_attempt_purchase()
+	else:
+		if Input.is_action_just_pressed("interact") or Input.is_action_just_pressed("jump"):
+			_advance_dialogue()
+
+
+func _attempt_purchase() -> void:
+	var item: Dictionary = dialogue_shop[dialogue_index]
+	var key: StringName = item.get("key", &"")
+	if Game.shop_bought(key) >= int(item.get("max", 1)):
+		dialogue_feedback = "这件东西已经卖完了。"
+	elif Game.geo < int(item.get("price", 0)):
+		dialogue_feedback = "吉欧不够。"
+	elif Game.purchase(item):
+		dialogue_feedback = "购得 · %s" % String(item.get("name", ""))
+	_sync_dialogue_hud()
+
+
+func _advance_dialogue() -> void:
+	if dialogue_page + 1 < dialogue_pages.size():
+		dialogue_page += 1
+		_sync_dialogue_hud()
+	elif not dialogue_shop.is_empty():
+		dialogue_mode = "shop"
+		dialogue_index = 0
+		_sync_dialogue_hud()
+	else:
+		_close_dialogue()
+
+
+func _close_dialogue() -> void:
+	if not dialogue_open:
+		return
+	dialogue_open = false
+	dialogue_npc = null
+	dialogue_pages = []
+	dialogue_shop = []
+	dialogue_mode = ""
+	dialogue_page = 0
+	dialogue_index = 0
+	dialogue_feedback = ""
+	Game.dialogue_cooldown = 0.35
+	get_tree().paused = false
+	world.player.control_enabled = true
+	hud.set_dialogue(false)
 
 
 func _toggle_pause() -> void:
