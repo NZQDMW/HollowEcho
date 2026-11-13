@@ -32,13 +32,17 @@ static var _glow: Texture2D
 
 static func font() -> Font:
 	if _font == null:
-		var f := SystemFont.new()
-		f.font_names = PackedStringArray([
-			"Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC",
-			"Source Han Sans SC", "SimHei", "sans-serif"
-		])
-		f.font_weight = 500
-		_font = f
+		var bundled := "res://assets/fonts/NotoSansSC-Medium-Subset.ttf"
+		if ResourceLoader.exists(bundled):
+			_font = load(bundled) as Font
+		if _font == null:
+			var f := SystemFont.new()
+			f.font_names = PackedStringArray([
+				"Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC",
+				"Source Han Sans SC", "SimHei", "sans-serif"
+			])
+			f.font_weight = 500
+			_font = f
 	return _font
 
 

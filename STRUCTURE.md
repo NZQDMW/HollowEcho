@@ -90,6 +90,7 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 - Optional bosses write their id to `Game.bosses_defeated`; `Room._build_boss` skips an already-defeated boss when the room reloads. The final boss alone calls `Game.trigger_ending()`.
 - All visuals are drawn with `_draw`/Polygon2D/gradient textures; CJK text uses SystemFont.
 - Touch controls appear when `DisplayServer.is_touchscreen_available()` or the OS is mobile; they simulate Input actions (joystick uses analog strengths) and call `GameRoot.touch_toggle_pause/map`. `Game.touch_mode` switches HUD hints. `pointing/emulate_touch_from_mouse` is enabled so a mouse click counts as a touch (click-to-start in browsers).
+- Bundled font: `assets/fonts/NotoSansSC-Medium-Subset.ttf` (SIL OFL, 592-glyph subset); `Utils.font()` loads it first so CJK text renders in the web export. The original Noto Sans SC variable font is not committed — regenerate the subset with fontTools if new Chinese strings are added.
 
 ## Signals
 

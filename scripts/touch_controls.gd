@@ -80,36 +80,53 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
+	var st := _game_state()
+	if st == 0 or st == 3:
+		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			touch_down(event.index, event.position)
+			if touch_down(event.index, event.position):
+				get_viewport().set_input_as_handled()
 		else:
 			touch_up(event.index)
 	elif event is InputEventScreenDrag:
 		touch_drag(event.index, event.position)
 
 
-func touch_down(index: int, pos: Vector2) -> void:
+func touch_down(index: int, pos: Vector2) -> bool:
+	if _overlay_open():
+		var sys := _system_button_at(pos)
+		if sys.is_empty():
+			return false
+		var sname := String(sys["name"])
+		touch_owner[index] = sname
+		button_down[sname] = time
+		if sname == "pause":
+			_game_call("touch_toggle_pause")
+		else:
+			_game_call("touch_toggle_map")
+		return true
 	if stick_index < 0 and pos.distance_to(stick_center) <= STICK_RADIUS * 1.28:
 		stick_index = index
 		stick_live = true
 		_update_stick(pos)
-		return
+		return true
 	var b := _button_at(pos)
 	if b.is_empty():
-		return
+		return false
 	var name := String(b["name"])
 	touch_owner[index] = name
 	button_down[name] = time
 	if String(b["action"]) == "pause":
 		_game_call("touch_toggle_pause")
-		return
+		return true
 	if String(b["action"]) == "map":
 		_game_call("touch_toggle_map")
-		return
+		return true
 	Input.action_press(String(b["action"]))
 	if not bool(b["hold"]):
 		pending_release[String(b["action"])] = TAP_HOLD
+	return true
 
 
 func touch_drag(index: int, pos: Vector2) -> void:
@@ -230,32 +247,80 @@ func is_portrait() -> bool:
 	return ws.y > ws.x
 
 
+func _game_root_node() -> Node:
+	if game_root == null or not is_instance_valid(game_root):
+		game_root = get_tree().get_first_node_in_group("game_root")
+	return game_root
+
+
+func _game_state() -> int:
+	var root := _game_root_node()
+	if root == null:
+		return -1
+	return int(root.get("state"))
+
+
+func _overlay_open() -> bool:
+	var root := _game_root_node()
+	if root == null:
+		return false
+	return bool(root.get("map_open")) or bool(root.get("paused"))
+
+
+func _system_allowed(button_name: String) -> bool:
+	var root := _game_root_node()
+	if root == null:
+		return button_name == "map" or button_name == "pause"
+	var map_open := bool(root.get("map_open"))
+	var is_paused := bool(root.get("paused"))
+	if map_open:
+		return button_name == "map"
+	if is_paused:
+		return button_name == "pause"
+	return button_name == "map" or button_name == "pause"
+
+
+func _system_button_at(pos: Vector2) -> Dictionary:
+	for b in buttons:
+		var n := String(b["name"])
+		if not _system_allowed(n):
+			continue
+		if pos.distance_to(b["pos"]) <= float(b["r"]) * 1.16:
+			return b
+	return {}
+
+
 func _draw() -> void:
 	if not visible:
 		return
 	var font := Utils.font()
 	var w := size.x
 	var h := size.y
+	var overlay_open := _overlay_open()
 
-	# --- 虚拟摇杆 ---
-	draw_circle(stick_center, STICK_RADIUS, Color(0.02, 0.04, 0.06, 0.34))
-	draw_arc(stick_center, STICK_RADIUS, 0.0, TAU, 48, Color(Utils.C_RIM, 0.38), 2.0, true)
-	draw_arc(stick_center, STICK_RADIUS * 0.62, 0.0, TAU, 40, Color(Utils.C_RIM, 0.16), 1.2, true)
-	var knob := stick_center + stick_knob
-	draw_circle(knob, 44.0, Color(Utils.C_SLATE, 0.62))
-	draw_arc(knob, 44.0, 0.0, TAU, 36, Color(Utils.C_GLOW, 0.7), 2.0, true)
-	draw_circle(knob, 16.0, Color(Utils.C_GLOW, 0.34))
-	var move_sz := font.get_string_size("移动", HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
-	draw_string(font, stick_center + Vector2(-move_sz.x * 0.5, STICK_RADIUS + 26.0), "移动",
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Utils.C_TEXT_DIM, 0.75))
+	if not overlay_open:
+		# --- 虚拟摇杆 ---
+		draw_circle(stick_center, STICK_RADIUS, Color(0.02, 0.04, 0.06, 0.34))
+		draw_arc(stick_center, STICK_RADIUS, 0.0, TAU, 48, Color(Utils.C_RIM, 0.38), 2.0, true)
+		draw_arc(stick_center, STICK_RADIUS * 0.62, 0.0, TAU, 40, Color(Utils.C_RIM, 0.16), 1.2, true)
+		var knob := stick_center + stick_knob
+		draw_circle(knob, 44.0, Color(Utils.C_SLATE, 0.62))
+		draw_arc(knob, 44.0, 0.0, TAU, 36, Color(Utils.C_GLOW, 0.7), 2.0, true)
+		draw_circle(knob, 16.0, Color(Utils.C_GLOW, 0.34))
+		var move_sz := font.get_string_size("移动", HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
+		draw_string(font, stick_center + Vector2(-move_sz.x * 0.5, STICK_RADIUS + 26.0), "移动",
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Utils.C_TEXT_DIM, 0.75))
 
-	# --- 动作键 ---
+	# --- 动作键（地图/暂停浮层打开时只保留右上角的图/停）---
 	for b in buttons:
+		if overlay_open and not _system_allowed(String(b["name"])):
+			continue
+		var bname := String(b["name"])
 		var c: Vector2 = b["pos"]
 		var r: float = b["r"]
 		var pressed := false
 		for idx in touch_owner:
-			if String(touch_owner[idx]) == String(b["name"]):
+			if String(touch_owner[idx]) == bname:
 				pressed = true
 		var fill := Color(0.05, 0.1, 0.14, 0.55 if not pressed else 0.82)
 		draw_circle(c, r, fill)

@@ -155,6 +155,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif state == State.ENDING:
 			_restart()
+		elif state == State.PLAYING:
+			if map_open:
+				_toggle_map()
+			elif paused:
+				_toggle_pause()
+		return
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			if state == State.TITLE:
+				start_game()
+				get_viewport().set_input_as_handled()
+			elif state == State.ENDING:
+				_restart()
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return

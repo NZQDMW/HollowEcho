@@ -56,6 +56,7 @@ A playable 2D side-scrolling Metroidvania in Godot 4.7 (GDScript) following Holl
 - Added `scripts/touch_controls.gd`: virtual joystick (left, analog move + aim up/down) and action buttons (right: 跳/打/冲/法/聚/互), plus map/pause buttons at top-right. Multi-touch; tap buttons auto-release, hold buttons support jump height and focus; releases all on focus loss.
 - Touch UI shows automatically on touch devices (`DisplayServer.is_touchscreen_available()` / mobile OS) and hides on desktop. `Game.touch_mode` switches title, pause, dialogue, shop, map and interact-prompt text to touch hints; a portrait overlay asks the player to rotate.
 - `project.godot`: landscape handheld orientation, `pointing/emulate_touch_from_mouse=true`, Web renderer override gl_compatibility.
+- Bundled a 592-glyph Noto Sans SC subset (`assets/fonts/NotoSansSC-Medium-Subset.ttf`, SIL OFL) because Godot's `SystemFont` renders CJK as tofu in the web export; `Utils.font()` now prefers the bundled font.
 - Added `export_presets.cfg` (Web, non-threaded WASM) and exported `docs/` for GitHub Pages.
 - Published the code and web build to `NZQDMW/HollowEcho`; Pages URL: `https://nzqdmw.github.io/HollowEcho/`.
 - Tests: `test/test_touch.gd` (joystick, aiming, auto-release, pause/map). All existing tests pass.

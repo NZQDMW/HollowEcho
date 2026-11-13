@@ -39,4 +39,5 @@ No image-generation API/key is available on this machine (Gemini/xAI/Tripo keys 
 | relic pickups | procedural icons | 48-64 px | dash cloak / wall claw / double-jump wings / mask shard |
 | geo | procedural | 18 px | golden shard with glow |
 | HUD | Control drawing | 1280x720 | masks, soul orb, geo counter, room banner, boss bar, prompts |
-| font | SystemFont | - | Microsoft YaHei / Noto Sans CJK SC fallback for Chinese |
+| font (bundled) | Noto Sans SC Medium subset | 592 glyphs, ~210 KB | `assets/fonts/NotoSansSC-Medium-Subset.ttf`, SIL OFL (license in `assets/fonts/OFL.txt`); used first by `Utils.font()` so Chinese renders in the web export; regenerate with fontTools when adding new Chinese text |
+| font (fallback) | SystemFont | - | Microsoft YaHei / Noto Sans CJK SC fallback if the bundled font is missing |
