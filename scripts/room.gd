@@ -30,6 +30,8 @@ func setup(room_data: Dictionary) -> void:
 	var size: Vector2 = data.get("size", Vector2(1280, 720))
 	bounds = Rect2(Vector2.ZERO, size)
 	_build_collision()
+	_build_platforms()
+	_build_saws()
 	_build_doors()
 	_build_hazards()
 	_build_pits()
@@ -157,6 +159,31 @@ func _load_script(path: String) -> GDScript:
 	return null
 
 
+func _build_platforms() -> void:
+	var mover := _load_script("res://scripts/moving_platform.gd")
+	if mover != null:
+		for p in data.get("platforms", []):
+			var node = mover.new()
+			node.setup(p)
+			add_child(node)
+	var crumbler := _load_script("res://scripts/crumble_platform.gd")
+	if crumbler != null:
+		for p in data.get("crumble", []):
+			var node = crumbler.new()
+			node.setup(p)
+			add_child(node)
+
+
+func _build_saws() -> void:
+	var scr := _load_script("res://scripts/sawblade.gd")
+	if scr == null:
+		return
+	for s in data.get("saws", []):
+		var node = scr.new()
+		node.setup(s)
+		add_child(node)
+
+
 func _build_gates() -> void:
 	var scr := _load_script("res://scripts/gate.gd")
 	if scr == null:
@@ -223,6 +250,15 @@ func _build_pickups() -> void:
 			continue
 		var node = scr.new()
 		node.setup_mask(pos, key)
+		add_child(node)
+	for s in data.get("specials", []):
+		var sid: StringName = s["id"]
+		var pos: Vector2 = s["pos"]
+		var key := "%s:%.0f:%.0f" % [room_id, pos.x, pos.y]
+		if Game.has_item(sid) or Game.taken_pickups.has(key):
+			continue
+		var node = scr.new()
+		node.setup_special(pos, sid, s["title"], key)
 		add_child(node)
 
 

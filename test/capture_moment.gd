@@ -62,8 +62,31 @@ func _setup() -> void:
 			game.debug_goto(&"r2", Vector2(170, 1200))
 			game.debug_goto(&"r3", Vector2(170, 780))
 			game.debug_goto(&"r8", Vector2(600, 760))
+		"map_all":
+			if gm != null:
+				for i in range(1, 15):
+					gm.visited[StringName("r%d" % i)] = true
+			game.debug_goto(&"r1", Vector2(360, 680))
 		"reward":
 			game.debug_goto(&"r10", Vector2(700, 620))
+		"passage":
+			game.debug_goto(&"r11", Vector2(1640, 1100))
+		"feather":
+			game.debug_goto(&"r11", Vector2(180, 640))
+		"pain":
+			game.debug_goto(&"r12", Vector2(420, 1200))
+		"pain_mid":
+			game.debug_goto(&"r12", Vector2(1450, 800))
+		"pain_deep":
+			game.debug_goto(&"r13", Vector2(980, 1800))
+		"heart":
+			game.debug_goto(&"r14", Vector2(560, 700))
+		"charms":
+			game.debug_goto(&"r14", Vector2(560, 700))
+			if gm != null:
+				gm.gain_item(&"feather", "轻羽斗篷")
+				gm.gain_item(&"lantern", "守梦者之灯")
+				gm.gain_item(&"pain_heart", "苦痛之心")
 
 
 func _process(_delta: float) -> void:
@@ -74,6 +97,8 @@ func _process(_delta: float) -> void:
 		game._advance_dialogue()
 		game._advance_dialogue()
 	if moment == "map" and frame == 120:
+		game._toggle_map()
+	if moment == "map_all" and frame == 30:
 		game._toggle_map()
 	if moment == "boss" and frame == 32:
 		var b = find_boss()

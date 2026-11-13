@@ -41,6 +41,16 @@ A playable 2D side-scrolling Metroidvania in Godot 4.7 (GDScript) following Holl
 - Screenshot proof: `screenshots/result/content/shot_*.png` (8 moments) via `test/capture_moment.tscn`.
 - Note: `--write-movie` + `--script` produces transparent frames on this Godot build; scene-driven capture is the working path.
 
+## Content Update 2 (2026-11-13): 苦痛之路
+
+- Added 4 rooms: r11 王座密道 (secret passage; charm pickup, 2 enemies), r12 苦痛之路·回廊 (horizontal gauntlet, 5 moving platforms, 2 crumbling slabs, 4 saws, 4 checkpoint pits), r13 苦痛之路·深井 (vertical wall-jump shaft, 2 moving platforms, 3 saws), r14 王座之心 (reward chamber with bench).
+- r6 王座前厅 gained a high ledge, a secret up-door to r11, and a hint sign; the lorekeeper has an extra page pointing at the rift.
+- Added a light special-item (charm) system: 轻羽斗篷 (dash cooldown −50%), 守梦者之灯 (soul cap +33, faster focus; sold by the merchant for 120 geo), 苦痛之心 (nail +2, soul on hit +5; Path of Pain reward). HUD draws three charm slots and the ending gains an extra line when 苦痛之心 is owned.
+- New mechanics: sine-moving AnimatableBody2D platforms that carry the player, crumbling slabs (0.6 s shake → collapse → 2.8 s re-form), rotating sawblades with sinusoidal patrols. New room-data keys: `platforms`, `crumble`, `saws`, `specials`.
+- Map expanded to 14 rooms in three rows; long labels auto-shrink.
+- Tests: `test/test_extra.gd` (door reciprocity across all 14 rooms, room contents, special-item effects/persistence, lantern purchase, map coverage) and `test/test_pain.gd` (moving platform carries the player horizontally and vertically). All existing tests still pass with `--fixed-fps 30`.
+- Screenshot proof: `screenshots/moments/{passage,feather,pain,pain_mid,pain_deep,heart,charms,map_all}/` via `test/capture_moment.tscn`.
+
 ## Notes
 
 - No audio (pipeline does not ship audio).
@@ -50,7 +60,7 @@ A playable 2D side-scrolling Metroidvania in Godot 4.7 (GDScript) following Holl
 
 - Risk task 1 (player controller + procedural animation): **complete**. Verified via scripted captures: run, jump, fall, dash (afterimage), wall slide/jump, double jump, side/up/down nail, pogo bounce, focus heal, hurt flash, facing flip.
 - Risk task 2 (rooms, camera, ability gates): **complete**. Door transitions land at paired doors, camera clamps to room bounds, dash gap requires the dash relic, wall gate opens after the wall relic, bench respawn works.
-- Main build: **complete** — 7 rooms, 3 enemy types, boss with 2 phases + arena gates, soul/heal/spell, mask shard, geo, death shade recovery, HUD/map/pause/title/ending.
-- Automated checks: `test/test_systems.gd` all ASSERTs pass; `test/test_ui.gd` map/pause asserts pass; no script errors in `godot --headless --quit`.
-- Presentation proof bundle: `screenshots/result/1/video.mp4` (30 s at 30 fps, 1280×720) + 900 raw `frame*.png` frames.
-- Deliberately out of scope: audio, charms/notches, vendor/map purchase, NPC dialogue, save-to-disk.
+- Main build: **complete** — 14 rooms, 3 enemy types + 2 extra, boss with 2 phases + arena gates, soul/heal/spell, mask shard, geo, death shade recovery, HUD/map/pause/title/ending, 3 special items and the Path of Pain hidden branch.
+- Automated checks: `test/test_systems.gd`, `test/test_content.gd`, `test/test_extra.gd`, `test/test_pain.gd`, `test/test_focus.gd`, `test/test_ui.gd`, `test/test_pit.gd` all ASSERTs pass with `--fixed-fps 30`; no script errors in `godot --headless --quit`.
+- Presentation proof bundle: `screenshots/result/1/video.mp4` (30 s at 30 fps, 1280×720) + 900 raw `frame*.png` frames; new-area moments in `screenshots/moments/`.
+- Deliberately out of scope: audio, full charm/notch system, vendor/map purchase, save-to-disk.

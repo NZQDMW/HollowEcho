@@ -10,6 +10,7 @@ signal boss_state(active: bool, title: String, hp: int, max_hp: int)
 signal shade_changed(active: bool)
 signal prompt_changed(text: String)
 signal dialogue_requested(npc: Node)
+signal item_gained(item_id: StringName, title: String)
 signal ending
 
 const MAX_SOUL := 99.0
@@ -22,6 +23,10 @@ var max_soul := MAX_SOUL
 var soul := 0.0
 var geo := 0
 var nail_bonus := 0
+var soul_gain_bonus := 0.0
+var dash_charm := false
+var focus_scale := 1.0
+var special_items := {}
 var relics := {
 	"dash": false, "wall": false, "double": false,
 	"key": false, "echo": false,
@@ -54,6 +59,10 @@ func reset_run() -> void:
 	soul = 0.0
 	geo = 0
 	nail_bonus = 0
+	soul_gain_bonus = 0.0
+	dash_charm = false
+	focus_scale = 1.0
+	special_items = {}
 	relics = {
 		"dash": false, "wall": false, "double": false,
 		"key": false, "echo": false,
@@ -128,6 +137,29 @@ func has_relic(relic_id: StringName) -> bool:
 	return bool(relics.get(relic_id, false))
 
 
+func has_item(item_id: StringName) -> bool:
+	return bool(special_items.get(item_id, false))
+
+
+func gain_item(item_id: StringName, title: String) -> void:
+	if has_item(item_id):
+		return
+	special_items[item_id] = true
+	match item_id:
+		&"feather":
+			dash_charm = true
+			toast.emit("获得 · %s · 冲刺的间隔变短了。" % title)
+		&"lantern":
+			add_soul_cap(33.0)
+			focus_scale = 0.7
+			toast.emit("获得 · %s · 灵魂容器扩大，聚集更快。" % title)
+		&"pain_heart":
+			nail_bonus += 2
+			soul_gain_bonus += 5.0
+			toast.emit("获得 · %s · 骨钉更利，痛楚化作灵魂。" % title)
+	item_gained.emit(item_id, title)
+
+
 func shop_bought(key: StringName) -> int:
 	return int(shop_purchases.get(key, 0))
 
@@ -158,6 +190,8 @@ func purchase(item: Dictionary) -> bool:
 			toast.emit("骨钉被磨得更锋利了 · 伤害提升")
 		&"key":
 			gain_relic(&"key", "锈蚀钥匙")
+		&"lantern":
+			gain_item(&"lantern", "守梦者之灯")
 	return true
 
 
@@ -189,7 +223,7 @@ func on_player_death(room_id: StringName, pos: Vector2) -> void:
 	masks = max_masks
 	masks_changed.emit(masks, max_masks)
 	soul = 0.0
-	soul_changed.emit(soul, MAX_SOUL)
+	soul_changed.emit(soul, max_soul)
 
 
 func reclaim_shade() -> void:

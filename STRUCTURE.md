@@ -35,22 +35,25 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 
 | File | Role |
 |------|------|
-| scripts/game.gd | Autoload `Game`: masks, soul, geo, relics, bench, shade, visited rooms, signals |
+| scripts/game.gd | Autoload `Game`: masks, soul, geo, relics, special items, bench, shade, visited rooms, signals |
 | scripts/game_root.gd | Root orchestration: title, play, death, ending, pause, room transitions, fade |
 | scripts/world.gd | Loads/frees rooms, spawns player, camera bounds, door handling |
-| scripts/room_data.gd | Static room definitions (platforms, doors, enemies, pickups, props) |
+| scripts/room_data.gd | Static room definitions (platforms, moving/crumble platforms, saws, doors, enemies, pickups, props) |
 | scripts/room.gd | Builds a room from data: collision, drawn terrain, entities, dust |
-| scripts/player.gd | CharacterBody2D controller, health, soul, attack, abilities |
+| scripts/player.gd | CharacterBody2D controller, health, soul, attack, abilities, special-item modifiers |
 | scripts/player_visual.gd | Procedural knight drawing + afterimages + focus aura |
 | scripts/enemy.gd | Enemy base: hp, hit flash, contact damage, death drops, fall-out recovery |
 | scripts/crawler.gd / flyer.gd / husk.gd | Enemy behaviors |
 | scripts/spitter.gd | Ranged acid spitter: patrol, telegraph, aimed acid projectile |
 | scripts/hopper.gd | Leaping enemy: crouch → leap toward the player |
+| scripts/moving_platform.gd | AnimatableBody2D moving slab (sine path); carries the player |
+| scripts/crumble_platform.gd | Crumbling slab: shakes, collapses, re-forms |
+| scripts/sawblade.gd | Rotating/patrolling saw hazard for the Path of Pain |
 | scripts/npc.gd | Area2D NPC: prompt, procedural merchant/lorekeeper drawing, opens dialogue/shop |
 | scripts/npc_data.gd | Static NPC definitions: merchant catalogue + lorekeeper pages |
 | scripts/boss.gd | Boss state machine, phases, shockwaves, defeat; configurable name/hp/final |
 | scripts/shade.gd | Death shade that holds lost geo |
-| scripts/pickup.gd | Geo, relic, mask shard pickups |
+| scripts/pickup.gd | Geo, relic, mask shard, special-item pickups |
 | scripts/bench.gd | Checkpoint/rest (heal, save) |
 | scripts/gate.gd | Relic/key-gated barrier |
 | scripts/sign.gd | Readable tutorial message |
@@ -65,6 +68,8 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 | test/smoke.gd | Basic movement/room-transition smoke test |
 | test/test_systems.gd | Relics, bench, death/shade, boss/ending assertions |
 | test/test_content.gd | Shop, key gate, new rooms, mask shard, optional boss assertions |
+| test/test_extra.gd | 14-room door reciprocity, 王座密道/苦痛之路/王座之心, special items, map coverage |
+| test/test_pain.gd | Moving-platform carry (horizontal / vertical) |
 | test/test_focus.gd | Focus heal / spell assertions |
 | test/test_ui.gd | Map / pause assertions |
 
@@ -77,7 +82,8 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 
 - Ledges use one-way collision shapes; ground/walls are solid.
 - Pickups persist collected state via `Game.taken_pickups` keyed by `room:x:y`; relics are skipped when already owned.
-- Room data may declare `npcs` (ids resolved through `NpcData`), `props` (stall/crate/bell/pillar, drawn by `Room`), and a `boss` config dict (`id`, `name`, `hp`, `final`, optional `phase2_text`).
+- Room data may declare `npcs` (ids resolved through `NpcData`), `props` (stall/crate/bell/pillar, drawn by `Room`), `platforms` (sine-moving AnimatableBody2D slabs), `crumble` (crumbling slabs), `saws` (rotating hazards), `specials` (special-item pickups) and a `boss` config dict (`id`, `name`, `hp`, `final`, optional `phase2_text`).
+- Special items live in `Game.special_items`; `Game.gain_item()` applies their passive effect (dash cooldown, focus speed, nail/soul bonus) and the HUD draws three charm slots.
 - NPC interaction pauses the tree; `GameRoot` polls W/S/E/Esc while the HUD draws the dialogue/shop panel. Purchases go through `Game.purchase(item)` and are recorded in `Game.shop_purchases`.
 - Optional bosses write their id to `Game.bosses_defeated`; `Room._build_boss` skips an already-defeated boss when the room reloads. The final boss alone calls `Game.trigger_ending()`.
 - All visuals are drawn with `_draw`/Polygon2D/gradient textures; CJK text uses SystemFont.
@@ -98,6 +104,7 @@ Entities, rooms and UI are constructed at runtime from code. No per-entity .tscn
 
 - Import: `godot --headless --path . --import`
 - Validate: `godot --headless --path . --quit`
+- Tests: `godot --headless --path . --fixed-fps 30 --script res://test/test_extra.gd`（同样适用于 test_systems / test_content / test_focus / test_ui / test_pit / test_pain）
 - Run: `godot --path .`
 - Capture (scene-driven): `godot --path . --write-movie screenshots/x/frame.png --fixed-fps 30 --quit-after N res://test/presentation_content.tscn`
 - Moment shots: `godot --path . --write-movie screenshots/moments/<name>/frame.png --fixed-fps 30 --quit-after 200 res://test/capture_moment.tscn -- --moment=<name>`

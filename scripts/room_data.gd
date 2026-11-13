@@ -14,6 +14,10 @@ static func room_name(id: StringName) -> String:
 		&"r8": return "静默集市"
 		&"r9": return "钟鸣洞窟"
 		&"r10": return "回响之厅"
+		&"r11": return "王座密道"
+		&"r12": return "苦痛之路·回廊"
+		&"r13": return "苦痛之路·深井"
+		&"r14": return "王座之心"
 	return "未知之地"
 
 
@@ -28,6 +32,10 @@ static func get_room(id: StringName) -> Dictionary:
 		&"r8": return _r8()
 		&"r9": return _r9()
 		&"r10": return _r10()
+		&"r11": return _r11()
+		&"r12": return _r12()
+		&"r13": return _r13()
+		&"r14": return _r14()
 	return _r1()
 
 
@@ -290,11 +298,13 @@ static func _r6() -> Dictionary:
 			{"rect": Rect2(700, 620, 240, 26), "seed": 84},
 			{"rect": Rect2(980, 480, 240, 26), "seed": 85},
 			{"rect": Rect2(1250, 600, 220, 26), "seed": 86},
+			{"rect": Rect2(1560, 380, 240, 26), "seed": 87},
 		],
 		"doors": [
 			{"side": "left", "trigger": Rect2(0, 540, 80, 260), "spawn": Vector2(170, 760), "target": &"r5", "target_door": 1},
 			{"side": "down", "trigger": Rect2(1440, 740, 120, 120), "spawn": Vector2(1620, 760), "target": &"r2", "target_door": 3},
 			{"side": "right", "trigger": Rect2(1920, 540, 80, 260), "spawn": Vector2(1840, 760), "target": &"r7", "target_door": 0},
+			{"side": "up", "trigger": Rect2(1600, 220, 160, 140), "spawn": Vector2(1680, 380), "target": &"r11", "target_door": 0},
 		],
 		"gates": [],
 		"enemies": [
@@ -313,6 +323,7 @@ static func _r6() -> Dictionary:
 		"lanterns": [Vector2(200, 760), Vector2(1750, 760)],
 		"signs": [
 			{"pos": Vector2(260, 760), "text": "王座前厅。\n长椅旁仍残留着旧日骑士的气息。"},
+			{"pos": Vector2(1330, 760), "text": "王座背后似乎有一道被遗忘的裂隙。\n高处的冷风不是从王座吹来的。"},
 		],
 		"hazards": [],
 		"boss": {},
@@ -509,4 +520,216 @@ static func _r10() -> Dictionary:
 			"phase2_text": "钟壳裂开了。里面的回响涌了出来。",
 		},
 		"arena": Rect2(180, 0, 1440, 620),
+	}
+
+
+static func _r11() -> Dictionary:
+	return {
+		"id": &"r11",
+		"name": "王座密道",
+		"seed": 131,
+		"size": Vector2(2000, 1300),
+		"spawn": Vector2(1840, 1100),
+		"theme": {"bg1": Color(0.028, 0.032, 0.05), "bg2": Color(0.075, 0.085, 0.12), "accent": Color(0.72, 0.82, 0.88)},
+		"ground": [
+			{"rect": Rect2(0, 1100, 700, 200), "seed": 132},
+			{"rect": Rect2(1300, 1100, 700, 200), "seed": 133},
+		],
+		"ledges": [
+			{"rect": Rect2(1420, 950, 240, 26), "seed": 134},
+			{"rect": Rect2(1150, 800, 240, 26), "seed": 135},
+			{"rect": Rect2(880, 660, 240, 26), "seed": 136},
+			{"rect": Rect2(560, 520, 260, 26), "seed": 137},
+			{"rect": Rect2(60, 640, 300, 26), "seed": 138},
+			{"rect": Rect2(260, 400, 240, 26), "seed": 139},
+		],
+		"doors": [
+			{"side": "right", "trigger": Rect2(1920, 840, 80, 260), "spawn": Vector2(1840, 1100), "target": &"r6", "target_door": 3},
+			{"side": "left", "trigger": Rect2(0, 380, 80, 260), "spawn": Vector2(180, 640), "target": &"r12", "target_door": 0},
+		],
+		"gates": [],
+		"enemies": [
+			{"type": "flyer", "pos": Vector2(1100, 920)},
+			{"type": "crawler", "pos": Vector2(1500, 1100), "min_x": 1350, "max_x": 1850},
+		],
+		"pickups": [
+			{"type": "geo", "pos": Vector2(500, 1040), "amount": 12},
+			{"type": "geo", "pos": Vector2(1000, 610), "amount": 10},
+		],
+		"relics": [],
+		"mask_shards": [],
+		"specials": [
+			{"id": &"feather", "title": "轻羽斗篷", "pos": Vector2(380, 320)},
+		],
+		"benches": [],
+		"lanterns": [Vector2(300, 1100), Vector2(1500, 1100), Vector2(180, 640)],
+		"signs": [
+			{"pos": Vector2(1650, 1100), "text": "王座之下，还有一条路。\n它不通向王座，只通向痛。"},
+			{"pos": Vector2(300, 640), "text": "没有长椅，也没有回头路。\n走之前，把该带的都带上。"},
+		],
+		"hazards": [],
+		"pits": [
+			{"rect": Rect2(700, 1180, 600, 120), "respawn": Vector2(640, 1100)},
+		],
+		"boss": {},
+		"arena": Rect2(),
+	}
+
+
+static func _r12() -> Dictionary:
+	return {
+		"id": &"r12",
+		"name": "苦痛之路·回廊",
+		"seed": 141,
+		"size": Vector2(4200, 1600),
+		"spawn": Vector2(170, 1200),
+		"theme": {"bg1": Color(0.045, 0.04, 0.035), "bg2": Color(0.12, 0.1, 0.08), "accent": Color(0.95, 0.72, 0.4)},
+		"ground": [
+			{"rect": Rect2(0, 1200, 520, 400), "seed": 142},
+			{"rect": Rect2(3800, 900, 400, 700), "seed": 143},
+		],
+		"ledges": [
+			{"rect": Rect2(900, 1120, 260, 26), "seed": 144},
+			{"rect": Rect2(1400, 800, 300, 26), "seed": 145},
+			{"rect": Rect2(2300, 740, 280, 26), "seed": 146},
+			{"rect": Rect2(3050, 560, 300, 26), "seed": 147},
+			{"rect": Rect2(3600, 440, 200, 26), "seed": 148},
+		],
+		"platforms": [
+			{"pos": Vector2(680, 1150), "size": Vector2(160, 24), "move": Vector2(120, 0), "period": 3.2, "phase": 0.0},
+			{"pos": Vector2(1260, 1000), "size": Vector2(160, 24), "move": Vector2(0, -160), "period": 3.0, "phase": 0.0},
+			{"pos": Vector2(1830, 760), "size": Vector2(160, 24), "move": Vector2(0, -140), "period": 3.4, "phase": 0.0},
+			{"pos": Vector2(2120, 780), "size": Vector2(160, 24), "move": Vector2(0, 140), "period": 3.4, "phase": 3.14159},
+			{"pos": Vector2(3480, 620), "size": Vector2(160, 24), "move": Vector2(0, -180), "period": 3.0, "phase": 0.0},
+		],
+		"crumble": [
+			{"pos": Vector2(2700, 690), "size": Vector2(140, 22), "delay": 0.6, "respawn": 2.8},
+			{"pos": Vector2(2900, 620), "size": Vector2(140, 22), "delay": 0.6, "respawn": 2.8},
+		],
+		"saws": [
+			{"pos": Vector2(1060, 1000), "radius": 26, "move": Vector2(0, 90), "period": 2.2},
+			{"pos": Vector2(1550, 660), "radius": 24, "move": Vector2(160, 0), "period": 2.8},
+			{"pos": Vector2(2800, 470), "radius": 26, "move": Vector2(0, 80), "period": 2.0, "phase": 1.0},
+			{"pos": Vector2(3300, 500), "radius": 26, "move": Vector2(120, 0), "period": 2.6},
+		],
+		"doors": [
+			{"side": "left", "trigger": Rect2(0, 900, 80, 300), "spawn": Vector2(170, 1200), "target": &"r11", "target_door": 1},
+			{"side": "right", "trigger": Rect2(4120, 620, 80, 300), "spawn": Vector2(4000, 900), "target": &"r13", "target_door": 0},
+		],
+		"gates": [],
+		"enemies": [],
+		"pickups": [
+			{"type": "geo", "pos": Vector2(1500, 740), "amount": 15},
+			{"type": "geo", "pos": Vector2(3150, 500), "amount": 15},
+		],
+		"relics": [],
+		"mask_shards": [],
+		"benches": [],
+		"lanterns": [Vector2(110, 1200)],
+		"signs": [
+			{"pos": Vector2(150, 1200), "text": "苦痛之路。\n脚下没有长椅，只有下一次跳跃。"},
+			{"pos": Vector2(2350, 740), "text": "痛会记得你。\n石台也是。"},
+		],
+		"hazards": [],
+		"pits": [
+			{"rect": Rect2(520, 1500, 800, 100), "respawn": Vector2(470, 1200)},
+			{"rect": Rect2(1320, 1500, 900, 100), "respawn": Vector2(1450, 800)},
+			{"rect": Rect2(2220, 1500, 900, 100), "respawn": Vector2(2350, 740)},
+			{"rect": Rect2(3120, 1500, 700, 100), "respawn": Vector2(3100, 560)},
+		],
+		"boss": {},
+		"arena": Rect2(),
+	}
+
+
+static func _r13() -> Dictionary:
+	return {
+		"id": &"r13",
+		"name": "苦痛之路·深井",
+		"seed": 151,
+		"size": Vector2(1800, 2600),
+		"spawn": Vector2(180, 2400),
+		"theme": {"bg1": Color(0.03, 0.032, 0.042), "bg2": Color(0.085, 0.09, 0.12), "accent": Color(0.8, 0.86, 0.92)},
+		"ground": [
+			{"rect": Rect2(0, 2400, 700, 200), "seed": 152},
+		],
+		"ledges": [
+			{"rect": Rect2(220, 2260, 240, 26), "seed": 153},
+			{"rect": Rect2(520, 2120, 240, 26), "seed": 154},
+			{"rect": Rect2(820, 1980, 240, 26), "seed": 155},
+			{"rect": Rect2(900, 1840, 600, 26), "seed": 156},
+			{"rect": Rect2(1150, 560, 300, 26), "seed": 157},
+			{"rect": Rect2(60, 440, 300, 26), "seed": 158},
+		],
+		"walls": [
+			{"rect": Rect2(1200, 580, 40, 1070), "seed": 159},
+			{"rect": Rect2(1440, 580, 40, 1070), "seed": 160},
+		],
+		"platforms": [
+			{"pos": Vector2(950, 560), "size": Vector2(160, 24), "move": Vector2(0, -100), "period": 3.0, "phase": 0.0},
+			{"pos": Vector2(700, 560), "size": Vector2(160, 24), "move": Vector2(140, 0), "period": 3.2, "phase": 0.0},
+		],
+		"saws": [
+			{"pos": Vector2(1340, 1250), "radius": 28, "move": Vector2(0, 260), "period": 3.2},
+			{"pos": Vector2(1340, 900), "radius": 28, "move": Vector2(0, 260), "period": 3.2, "phase": 3.14159},
+			{"pos": Vector2(760, 480), "radius": 24, "move": Vector2(0, 80), "period": 2.6},
+		],
+		"doors": [
+			{"side": "left", "trigger": Rect2(0, 2140, 80, 260), "spawn": Vector2(180, 2400), "target": &"r12", "target_door": 1},
+			{"side": "left", "trigger": Rect2(0, 340, 80, 260), "spawn": Vector2(180, 440), "target": &"r14", "target_door": 0},
+		],
+		"gates": [],
+		"enemies": [],
+		"pickups": [],
+		"relics": [],
+		"mask_shards": [],
+		"benches": [],
+		"lanterns": [Vector2(150, 2400), Vector2(920, 1800)],
+		"signs": [
+			{"pos": Vector2(140, 2400), "text": "苦痛之路·深井。\n向上，或者重新开始。"},
+		],
+		"hazards": [],
+		"pits": [
+			{"rect": Rect2(700, 2450, 1100, 150), "respawn": Vector2(620, 2400)},
+		],
+		"boss": {},
+		"arena": Rect2(),
+	}
+
+
+static func _r14() -> Dictionary:
+	return {
+		"id": &"r14",
+		"name": "王座之心",
+		"seed": 161,
+		"size": Vector2(1400, 900),
+		"spawn": Vector2(180, 700),
+		"theme": {"bg1": Color(0.035, 0.028, 0.03), "bg2": Color(0.11, 0.08, 0.07), "accent": Color(0.96, 0.62, 0.45)},
+		"ground": [
+			{"rect": Rect2(0, 700, 1400, 200), "seed": 162},
+		],
+		"ledges": [],
+		"doors": [
+			{"side": "left", "trigger": Rect2(0, 460, 80, 240), "spawn": Vector2(180, 700), "target": &"r13", "target_door": 1},
+		],
+		"gates": [],
+		"enemies": [],
+		"pickups": [],
+		"relics": [],
+		"mask_shards": [],
+		"specials": [
+			{"id": &"pain_heart", "title": "苦痛之心", "pos": Vector2(700, 560)},
+		],
+		"benches": [Vector2(240, 700)],
+		"lanterns": [Vector2(200, 700), Vector2(1200, 700)],
+		"signs": [
+			{"pos": Vector2(560, 700), "text": "王座之心。\n苦痛没有尽头，但这里有一个。"},
+		],
+		"props": [
+			{"type": "pillar", "pos": Vector2(440, 700)},
+			{"type": "pillar", "pos": Vector2(960, 700)},
+		],
+		"hazards": [],
+		"boss": {},
+		"arena": Rect2(),
 	}

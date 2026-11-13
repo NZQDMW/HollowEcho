@@ -153,7 +153,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.x = move_toward(velocity.x, 0.0, DECEL * delta)
 			focus_timer += delta
-			if focus_timer >= FOCUS_TIME:
+			if focus_timer >= FOCUS_TIME * Game.focus_scale:
 				focus_timer = 0.0
 				if Game.spend_soul(Game.HEAL_COST):
 					Game.heal(1)
@@ -181,7 +181,7 @@ func _physics_process(delta: float) -> void:
 		if dash_timer <= 0.0:
 			dashing = false
 			velocity.x = facing * 450.0
-			dash_cd = DASH_COOLDOWN
+			dash_cd = DASH_COOLDOWN * _dash_cd_scale()
 		move_and_slide()
 		return
 
@@ -267,12 +267,16 @@ func _physics_process(delta: float) -> void:
 func _start_dash() -> void:
 	dashing = true
 	dash_timer = DASH_TIME
-	dash_cd = DASH_COOLDOWN
+	dash_cd = DASH_COOLDOWN * _dash_cd_scale()
 	if not is_on_floor():
 		dash_used_in_air = true
 	attack_area.monitoring = false
 	attacking = false
 	dashed.emit()
+
+
+func _dash_cd_scale() -> float:
+	return 0.5 if Game.dash_charm else 1.0
 
 
 func _start_attack() -> void:
@@ -307,7 +311,7 @@ func _attack_query() -> void:
 			continue
 		attack_hits[id] = true
 		body.take_hit(ATTACK_DAMAGE + Game.nail_bonus, attack_dir, self)
-		Game.add_soul(10.0)
+		Game.add_soul(10.0 + Game.soul_gain_bonus)
 		attack_hit.emit(body.global_position, attack_dir)
 		if attack_dir == Vector2.DOWN:
 			velocity.y = -560.0

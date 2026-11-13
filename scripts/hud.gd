@@ -27,20 +27,25 @@ var boss_hp := 0
 var boss_max := 1
 
 var map_rooms := {
-	&"r1": Rect2(0, 80, 120, 70),
-	&"r2": Rect2(176, 80, 120, 70),
-	&"r3": Rect2(352, 80, 120, 70),
-	&"r8": Rect2(528, 80, 120, 70),
-	&"r9": Rect2(704, 80, 120, 70),
-	&"r10": Rect2(880, 80, 120, 70),
-	&"r4": Rect2(176, 220, 120, 70),
-	&"r5": Rect2(352, 220, 120, 70),
-	&"r6": Rect2(528, 220, 120, 70),
-	&"r7": Rect2(704, 220, 120, 70),
+	&"r1": Rect2(0, 80, 110, 58),
+	&"r2": Rect2(176, 80, 110, 58),
+	&"r3": Rect2(352, 80, 110, 58),
+	&"r8": Rect2(528, 80, 110, 58),
+	&"r9": Rect2(704, 80, 110, 58),
+	&"r10": Rect2(880, 80, 110, 58),
+	&"r4": Rect2(176, 200, 110, 58),
+	&"r5": Rect2(352, 200, 110, 58),
+	&"r6": Rect2(528, 200, 110, 58),
+	&"r7": Rect2(704, 200, 110, 58),
+	&"r11": Rect2(528, 320, 110, 58),
+	&"r12": Rect2(390, 320, 110, 58),
+	&"r13": Rect2(252, 320, 110, 58),
+	&"r14": Rect2(114, 320, 110, 58),
 }
 var map_links := [
 	[&"r1", &"r2"], [&"r2", &"r3"], [&"r3", &"r8"], [&"r8", &"r9"], [&"r9", &"r10"],
 	[&"r2", &"r4"], [&"r4", &"r5"], [&"r5", &"r6"], [&"r6", &"r7"], [&"r2", &"r6"],
+	[&"r6", &"r11"], [&"r11", &"r12"], [&"r12", &"r13"], [&"r13", &"r14"],
 ]
 
 
@@ -145,6 +150,7 @@ func _draw() -> void:
 
 	_draw_masks()
 	_draw_soul()
+	_draw_items()
 	_draw_geo(w)
 	_draw_banner(w)
 	if not (dialogue_visible or map_visible or pause_visible):
@@ -196,6 +202,35 @@ func _draw_soul() -> void:
 	draw_circle(c, 17.0 * ratio, Color(Utils.C_SOUL, 0.18 + ratio * 0.25))
 	draw_circle(c + Vector2(-6, -7), 4.0, Color(0.8, 0.97, 1.0, 0.55))
 	draw_circle(c + Vector2(7, 5), 2.5, Color(0.8, 0.97, 1.0, 0.35))
+
+
+func _draw_items() -> void:
+	var slots := [&"feather", &"lantern", &"pain_heart"]
+	for i in range(slots.size()):
+		var id: StringName = slots[i]
+		var c := Vector2(46.0 + i * 54.0, 204.0)
+		var box := Rect2(c - Vector2(20, 20), Vector2(40, 40))
+		draw_rect(box, Color(0.03, 0.05, 0.07, 0.55))
+		draw_rect(box, Color(Utils.C_RIM, 0.4 if Game.has_item(id) else 0.1), false, 1.2)
+		if not Game.has_item(id):
+			continue
+		match id:
+			&"feather":
+				for k in range(3):
+					draw_line(c + Vector2(-11 + k * 3, 8 - k * 2), c + Vector2(9 - k * 4, -10 + k * 4),
+						Color(Utils.C_IVORY, 0.85 - k * 0.16), 2.4 - k * 0.4)
+			&"lantern":
+				draw_colored_polygon(PackedVector2Array([
+					c + Vector2(-7, -9), c + Vector2(7, -9), c + Vector2(9, 9), c + Vector2(-9, 9)
+				]), Color(0.32, 0.28, 0.2, 0.95))
+				draw_circle(c + Vector2(0, 0), 4.5, Color(1.0, 0.84, 0.5, 0.95))
+				draw_circle(c + Vector2(0, 0), 10.0, Color(1.0, 0.75, 0.4, 0.14))
+			&"pain_heart":
+				draw_colored_polygon(PackedVector2Array([
+					c + Vector2(0, 11), c + Vector2(-11, 0), c + Vector2(-7, -10),
+					c + Vector2(0, -4), c + Vector2(7, -10), c + Vector2(11, 0)
+				]), Color(0.72, 0.18, 0.2, 0.95))
+				draw_line(c + Vector2(0, 8), c + Vector2(0, -3), Color(1.0, 0.72, 0.55, 0.8), 1.2)
 
 
 func _draw_geo(w: float) -> void:
@@ -395,8 +430,12 @@ func _draw_map(w: float, h: float) -> void:
 		var label := "？"
 		if Game.visited.has(id):
 			label = RoomData.room_name(id)
-		var sz := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 17)
-		draw_string(font, rr.position + Vector2((r.size.x - sz.x) * 0.5, r.size.y * 0.5 + 6.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color(Utils.C_TEXT, 0.9))
+		var fs := 17
+		var sz := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs)
+		if sz.x > r.size.x - 8.0:
+			fs = 13
+			sz = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs)
+		draw_string(font, rr.position + Vector2((r.size.x - sz.x) * 0.5, r.size.y * 0.5 + 6.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(Utils.C_TEXT, 0.9))
 	var explored := 0
 	for id in map_rooms:
 		if Game.visited.has(id):
@@ -428,5 +467,7 @@ func _draw_ending(w: float, h: float) -> void:
 		_ctext("钟声停了。所有的回响都已安息。", h * 0.65, 19, Color(Utils.C_TEXT_DIM, 0.8))
 	else:
 		_ctext("但深井之下，还有别的回响在等待。", h * 0.65, 19, Color(Utils.C_TEXT_DIM, 0.8))
+	if Game.has_item(&"pain_heart"):
+		_ctext("你也走完了苦痛之路。王座深处的痛，从此有了名字。", h * 0.71, 19, Color(0.96, 0.72, 0.55, 0.9))
 	var blink := 0.55 + 0.45 * sin(time * 3.0)
 	_ctext("按 R 重新开始", h * 0.82, 26, Color(Utils.C_SOUL, blink))
